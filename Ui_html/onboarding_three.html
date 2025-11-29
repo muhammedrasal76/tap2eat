@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Tap2Eat Onboarding</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@100..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13a4ec", // Placeholder, will use requested colors
+                        "background-light": "#f6f7f8", // Placeholder
+                        "background-dark": "#121212",
+                        "accent-teal": "#48D1CC",
+                        "accent-blue": "#007BFF",
+                        "text-light": "#EAEAEA",
+                        "indicator-inactive": "#325567"
+                    },
+                    fontFamily: {
+                        "display": ["Sora", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 48;
+            font-size: 120px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display">
+<div class="relative flex h-[100dvh] w-full flex-col bg-black dark group/design-root overflow-x-hidden">
+<div class="flex flex-1 flex-col justify-between p-6">
+<div class="flex flex-1 flex-col items-center justify-center pt-8">
+<div class="flex h-48 w-48 items-center justify-center rounded-full bg-accent-teal/10">
+<span class="material-symbols-outlined text-accent-teal">
+                        payments
+                    </span>
+</div>
+</div>
+<div class="flex flex-col items-center justify-center text-center">
+<h1 class="text-text-light tracking-tight text-[32px] font-bold leading-tight pb-3 pt-6">Earn While You Learn</h1>
+<p class="text-text-light max-w-sm text-base font-normal leading-normal pb-3 pt-1">Students can go 'Online' to deliver orders and make extra cash on campus.</p>
+</div>
+<div class="flex flex-col items-center justify-end gap-6 pt-8">
+<div class="flex w-full flex-row items-center justify-center gap-3 py-5">
+<div class="h-2 w-2 rounded-full bg-indicator-inactive"></div>
+<div class="h-2 w-2 rounded-full bg-indicator-inactive"></div>
+<div class="h-2 w-2 rounded-full bg-accent-teal"></div>
+</div>
+<div class="flex w-full justify-center">
+<button class="flex min-w-[84px] w-full max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-accent-teal text-black text-base font-bold leading-normal tracking-[0.015em]">
+<span class="truncate">Get Started</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+
+</body></html>

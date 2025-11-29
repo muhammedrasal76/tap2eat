@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'config/theme/app_theme.dart';
 import 'config/routes/app_router.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
+import 'features/auth/presentation/providers/onboarding_provider.dart';
 import 'shared/providers/firebase_provider.dart';
 
 void main() async {
@@ -26,6 +27,9 @@ class MyApp extends StatelessWidget {
       providers: [
         // Auth Provider
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+
+        // Onboarding Provider
+        ChangeNotifierProvider(create: (_) => OnboardingProvider()),
 
         // TODO: Add more providers as features are implemented
         // ChangeNotifierProvider(create: (_) => MenuProvider()),
