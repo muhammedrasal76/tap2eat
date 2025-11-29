@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/onboarding_page.dart';
+import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/splash_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import 'route_names.dart';
@@ -32,9 +33,7 @@ class AppRouter {
       GoRoute(
         path: RouteNames.register,
         name: 'register',
-        builder: (context, state) => const Scaffold(
-          body: Center(child: Text('Registration Page - To be implemented')),
-        ),
+        builder: (context, state) => const RegisterPage(),
       ),
 
       // Home routes (role-based)

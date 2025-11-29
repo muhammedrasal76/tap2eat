@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../../../config/constants/enum_values.dart';
+import '../../../../config/routes/route_names.dart';
 import '../../../../config/theme/colors.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/app_text_field.dart';
@@ -35,9 +38,33 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       if (mounted && authProvider.errorMessage == null) {
-        // TODO: Navigate to appropriate home page based on user role
-        // Navigator.of(context).pushReplacementNamed(RouteNames.studentHome);
+        // Navigate to appropriate home page based on user role
+        _navigateToHome();
       }
+    }
+  }
+
+  void _navigateToHome() {
+    final role = context.read<AuthProvider>().userRole;
+
+    if (role == null) {
+      // Edge case: should not happen, but handle gracefully
+      return;
+    }
+
+    switch (role) {
+      case UserRole.student:
+        context.go(RouteNames.studentHome);
+        break;
+      case UserRole.teacher:
+        context.go(RouteNames.teacherHome);
+        break;
+      case UserRole.deliveryStudent:
+        context.go(RouteNames.deliveryStudentHome);
+        break;
+      default:
+        // Fallback to login if role not recognized
+        context.go(RouteNames.login);
     }
   }
 
@@ -159,8 +186,7 @@ class _LoginPageState extends State<LoginPage> {
                   // Register link
                   TextButton(
                     onPressed: () {
-                      // TODO: Navigate to registration page
-                      // Navigator.of(context).pushNamed(RouteNames.register);
+                      context.go(RouteNames.register);
                     },
                     child: const Text("Don't have an account? Register"),
                   ),

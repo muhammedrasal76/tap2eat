@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../../../../config/theme/colors.dart';
 import '../../../../config/constants/enum_values.dart';
+import '../../../../config/routes/route_names.dart';
+import '../../../../config/theme/colors.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
 /// Home page (role-specific content will be shown based on user role)
@@ -48,8 +50,7 @@ class HomePage extends StatelessWidget {
                   onPressed: () async {
                     await authProvider.signOut();
                     if (context.mounted) {
-                      // TODO: Navigate to login page
-                      // Navigator.of(context).pushReplacementNamed(RouteNames.login);
+                      context.go(RouteNames.login);
                     }
                   },
                   child: const Text('Logout'),
