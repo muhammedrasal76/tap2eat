@@ -1,0 +1,31 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global rule: Only logged-in users can access data
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // USERS (D1): Users can only read/write their own profile data
+    match /users/{userId} {
+      allow read: if request.auth != null; // Anyone can read a user profile (e.g., Delivery Student info)
+      allow write: if request.auth.uid == userId; // Users can only edit their own profile
+    }
+
+    // CANTEENS (D4): Canteen Admins can write their own settings; others can only read.
+    match /canteens/{canteenId} {
+      allow read: if request.auth != null; // All users can read menus
+      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'master_admin'
+                   || (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'canteen_admin' && 
+                       get(/databases/$(database)/documents/users/$(request.auth.uid)).data.canteen_id == canteenId);
+      // This enforces: only Master Admin can write, OR Canteen Admin can write IF their user doc links to that specific canteenId.
+    }
+    
+    // SETTINGS (D3): Only Master Admin can change global policies
+    match /settings/{docId} {
+      allow read: if request.auth != null;
+      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'master_admin';
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "686839663628",
+    "project_id": "tap2eat-7642c",
+    "storage_bucket": "tap2eat-7642c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:686839663628:android:98f858507d42801c54f229",
+        "android_client_info": {
+          "package_name": "com.example.tap2eat_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDoIodf_pDGmKvIcp6t-YJtrCOKwcX9Sh4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
