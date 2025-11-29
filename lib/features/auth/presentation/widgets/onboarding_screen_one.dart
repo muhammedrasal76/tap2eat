@@ -71,8 +71,8 @@ class OnboardingScreenOne extends StatelessWidget {
 
                       // Timer badge (top-right)
                       Positioned(
-                        top: -4,
-                        right: -4,
+                        top:1,
+                        right: 1,
                         child: Container(
                           width: 56,
                           height: 56,
