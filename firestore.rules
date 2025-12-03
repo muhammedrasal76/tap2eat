@@ -2,30 +2,107 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Global rule: Only logged-in users can access data
-    match /{document=**} {
-      allow read, write: if request.auth != null;
-    }
-    
-    // USERS (D1): Users can only read/write their own profile data
-    match /users/{userId} {
-      allow read: if request.auth != null; // Anyone can read a user profile (e.g., Delivery Student info)
-      allow write: if request.auth.uid == userId; // Users can only edit their own profile
+    // ===== HELPER FUNCTIONS =====
+    function isAuthenticated() {
+      return request.auth != null;
     }
 
-    // CANTEENS (D4): Canteen Admins can write their own settings; others can only read.
-    match /canteens/{canteenId} {
-      allow read: if request.auth != null; // All users can read menus
-      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'master_admin'
-                   || (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'canteen_admin' && 
-                       get(/databases/$(database)/documents/users/$(request.auth.uid)).data.canteen_id == canteenId);
-      // This enforces: only Master Admin can write, OR Canteen Admin can write IF their user doc links to that specific canteenId.
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
     }
-    
-    // SETTINGS (D3): Only Master Admin can change global policies
+
+    function isCanteenAdmin(canteenId) {
+      let user = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+      return user.role == 'canteen_admin' && user.canteen_id == canteenId;
+    }
+
+    function isMasterAdmin() {
+      return getUserRole() == 'master_admin';
+    }
+
+    // ===== USERS COLLECTION (D1) =====
+    match /users/{userId} {
+      // Anyone authenticated can read user profiles (for delivery student info, etc.)
+      allow read: if isAuthenticated();
+
+      // Users can create their own profile during registration
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+
+      // Users can update their own profile, or master admin can update any
+      // Cloud Functions can also update (e.g., earnings_balance, is_online)
+      allow update: if isAuthenticated() && (request.auth.uid == userId || isMasterAdmin());
+
+      // Only master admin can delete users
+      allow delete: if isMasterAdmin();
+    }
+
+    // ===== ORDERS COLLECTION (D2) =====
+    match /orders/{orderId} {
+      allow read: if isAuthenticated() && (
+        // User can read their own orders
+        resource.data.user_id == request.auth.uid ||
+        // Delivery student can read assigned orders
+        resource.data.delivery_student_id == request.auth.uid ||
+        // Canteen admin can read their canteen's orders
+        isCanteenAdmin(resource.data.canteen_id) ||
+        // Master admin can read all
+        isMasterAdmin()
+      );
+
+      // Orders can ONLY be created via Cloud Functions (placeOrder)
+      allow create: if false;
+
+      // Orders can ONLY be updated via Cloud Functions
+      allow update: if false;
+
+      // Only master admin can delete orders
+      allow delete: if isMasterAdmin();
+    }
+
+    // ===== CANTEENS COLLECTION (D4) =====
+    match /canteens/{canteenId} {
+      // All authenticated users can read canteen data (menus, limits)
+      allow read: if isAuthenticated();
+
+      // Only canteen admin (for their canteen) or master admin can write
+      allow write: if isMasterAdmin() || isCanteenAdmin(canteenId);
+    }
+
+    // ===== SETTINGS COLLECTION (D3) =====
     match /settings/{docId} {
-      allow read: if request.auth != null;
-      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'master_admin';
+      // All authenticated users can read settings (break_slots, cutoff)
+      allow read: if isAuthenticated();
+
+      // Only master admin can write settings
+      allow write: if isMasterAdmin();
+    }
+
+    // ===== EARNINGS COLLECTION (New) =====
+    match /earnings/{earningId} {
+      allow read: if isAuthenticated() && (
+        // Delivery student can read their own earnings
+        resource.data.delivery_student_id == request.auth.uid ||
+        // Master admin can read all
+        isMasterAdmin()
+      );
+
+      // Earnings can ONLY be created via Cloud Functions (confirmDelivery)
+      allow create, update, delete: if false;
+    }
+
+    // ===== AUDIT LOGS COLLECTION (New) =====
+    match /audit_logs/{logId} {
+      // Only master admin can read audit logs
+      allow read: if isMasterAdmin();
+
+      // Audit logs can ONLY be created via Cloud Functions
+      allow create, update, delete: if false;
+    }
+
+    // ===== DEFAULT DENY ALL =====
+    // Deny access to any collection not explicitly defined above
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
