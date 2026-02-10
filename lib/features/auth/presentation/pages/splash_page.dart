@@ -97,13 +97,14 @@ class _SplashPageState extends State<SplashPage> {
     switch (role) {
       case UserRole.student:
         context.go(RouteNames.studentHome);
-        break;
       case UserRole.teacher:
         context.go(RouteNames.teacherHome);
-        break;
       case UserRole.deliveryStudent:
         context.go(RouteNames.deliveryStudentHome);
-        break;
+      case UserRole.masterAdmin:
+      case UserRole.canteenAdmin:
+        // Admin roles shouldn't use mobile app - redirect to login
+        context.go(RouteNames.login);
     }
   }
 

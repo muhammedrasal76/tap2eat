@@ -11,6 +11,5 @@ class CanteenEntity with _$CanteenEntity {
     required List<MenuItemEntity> menuItems,
     required int maxConcurrentOrders,
     required bool isActive,
-    String? imageUrl,
   }) = _CanteenEntity;
 }

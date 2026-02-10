@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../../config/theme/colors.dart';
 import '../../../../config/theme/text_styles.dart';
 import '../../../../shared/widgets/empty_state_widget.dart';
 import '../../../../shared/widgets/loading_spinner.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../order/presentation/providers/order_provider.dart';
+import '../../../order/presentation/widgets/order_history_card.dart';
 import '../providers/home_provider.dart';
 import '../widgets/canteen_card.dart';
 import '../widgets/go_online_button.dart';
@@ -21,6 +24,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final TextEditingController _searchController = TextEditingController();
+  int _currentIndex = 0;
 
   @override
   void initState() {
@@ -52,68 +56,79 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: AppColors.base,
       body: SafeArea(
-        child: Consumer2<AuthProvider, HomeProvider>(
-          builder: (context, authProvider, homeProvider, _) {
-            if (homeProvider.isLoading) {
-              return const LoadingSpinner();
-            }
-
-            if (homeProvider.errorMessage != null) {
-              return EmptyStateWidget(
-                icon: Icons.error_outline,
-                title: 'Something went wrong',
-                subtitle: homeProvider.errorMessage,
-                action: ElevatedButton(
-                  onPressed: () => _initializeData(),
-                  child: const Text('Retry'),
-                ),
-              );
-            }
-
-            return RefreshIndicator(
-              onRefresh: () async {
-                if (authProvider.firebaseUser != null) {
-                  await homeProvider.refresh(authProvider.firebaseUser!.uid);
+        child: IndexedStack(
+          index: _currentIndex,
+          children: [
+            // Tab 0: Home
+            Consumer2<AuthProvider, HomeProvider>(
+              builder: (context, authProvider, homeProvider, _) {
+                if (homeProvider.isLoading) {
+                  return const LoadingSpinner();
                 }
+
+                if (homeProvider.errorMessage != null) {
+                  return EmptyStateWidget(
+                    icon: Icons.error_outline,
+                    title: 'Something went wrong',
+                    subtitle: homeProvider.errorMessage,
+                    action: ElevatedButton(
+                      onPressed: () => _initializeData(),
+                      child: const Text('Retry'),
+                    ),
+                  );
+                }
+
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    if (authProvider.firebaseUser != null) {
+                      await homeProvider
+                          .refresh(authProvider.firebaseUser!.uid);
+                    }
+                  },
+                  child: CustomScrollView(
+                    slivers: [
+                      // Header with welcome message and search
+                      _buildHeader(authProvider),
+
+                      // Recently Ordered Section
+                      if (homeProvider.recentOrders.isNotEmpty)
+                        _buildRecentOrdersSection(homeProvider),
+
+                      // Canteens Section
+                      _buildCanteensSection(homeProvider),
+
+                      // Bottom padding for FAB
+                      const SliverToBoxAdapter(
+                          child: SizedBox(height: 100)),
+                    ],
+                  ),
+                );
               },
-              child: CustomScrollView(
-                slivers: [
-                  // Header with welcome message and search
-                  _buildHeader(authProvider),
-
-                  // Recently Ordered Section
-                  if (homeProvider.recentOrders.isNotEmpty)
-                    _buildRecentOrdersSection(homeProvider),
-
-                  // Canteens Section
-                  _buildCanteensSection(homeProvider),
-
-                  // Bottom padding for FAB
-                  const SliverToBoxAdapter(child: SizedBox(height: 100)),
-                ],
-              ),
-            );
-          },
+            ),
+            // Tab 1: Orders
+            _buildOrdersTab(),
+          ],
         ),
       ),
-      floatingActionButton: Consumer2<AuthProvider, HomeProvider>(
-        builder: (context, authProvider, homeProvider, _) {
-          final shouldShow = homeProvider.shouldShowGoOnlineButton(
-            authProvider.userRole,
-          );
+      floatingActionButton: _currentIndex == 0
+          ? Consumer2<AuthProvider, HomeProvider>(
+              builder: (context, authProvider, homeProvider, _) {
+                final shouldShow = homeProvider.shouldShowGoOnlineButton(
+                  authProvider.userRole,
+                );
 
-          if (!shouldShow) return const SizedBox.shrink();
+                if (!shouldShow) return const SizedBox.shrink();
 
-          return GoOnlineButton(
-            onPressed: () {
-              // TODO: Navigate to delivery student "Go Online" screen
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('Going online...')));
-            },
-          );
-        },
-      ),
+                return GoOnlineButton(
+                  onPressed: () {
+                    // TODO: Navigate to delivery student "Go Online" screen
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Going online...')));
+                  },
+                );
+              },
+            )
+          : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       bottomNavigationBar: _buildBottomNavBar(),
     );
@@ -167,7 +182,7 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 12),
             SizedBox(
-              height: 160,
+              height: 100,
               child: ListView.separated(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 scrollDirection: Axis.horizontal,
@@ -177,9 +192,7 @@ class _HomePageState extends State<HomePage> {
                   final order = homeProvider.recentOrders[index];
                   return RecentOrderCard(
                     order: order,
-                    onTap: () {
-                      // TODO: Navigate to order details
-                    },
+                    onTap: () => context.push('/order/${order.id}'),
                   );
                 },
               ),
@@ -214,12 +227,103 @@ class _HomePageState extends State<HomePage> {
             child: CanteenCard(
               canteen: canteen,
               onTap: () {
-                // TODO: Navigate to canteen menu
+                // Navigate to menu screen with canteen data
+                context.pushNamed('menu', extra: canteen);
               },
             ),
           );
         }, childCount: homeProvider.canteens.length + 1),
       ),
+    );
+  }
+
+  Widget _buildOrdersTab() {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: const BoxDecoration(
+            color: AppColors.base,
+            border: Border(
+              bottom: BorderSide(color: AppColors.borderColor),
+            ),
+          ),
+          child: Row(
+            children: [
+              Text('Order History', style: AppTextStyles.h3),
+            ],
+          ),
+        ),
+        Expanded(
+          child: Consumer<OrderProvider>(
+            builder: (context, order, _) {
+              if (order.isLoadingHistory) {
+                return const LoadingSpinner(message: 'Loading orders...');
+              }
+
+              if (order.historyError != null) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        order.historyError!,
+                        style: AppTextStyles.bodyMedium
+                            .copyWith(color: AppColors.error),
+                      ),
+                      const SizedBox(height: 16),
+                      TextButton(
+                        onPressed: () {
+                          final userId =
+                              context.read<AuthProvider>().firebaseUser?.uid;
+                          if (userId != null) {
+                            context
+                                .read<OrderProvider>()
+                                .fetchOrderHistory(userId);
+                          }
+                        },
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              if (order.orders.isEmpty) {
+                return const EmptyStateWidget(
+                  icon: Icons.receipt_long,
+                  title: 'No orders yet',
+                  subtitle:
+                      'Your order history will appear here once you place an order',
+                );
+              }
+
+              return RefreshIndicator(
+                onRefresh: () async {
+                  final userId =
+                      context.read<AuthProvider>().firebaseUser?.uid;
+                  if (userId != null) {
+                    context.read<OrderProvider>().fetchOrderHistory(userId);
+                  }
+                },
+                color: AppColors.primary,
+                child: ListView.separated(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: order.orders.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 10),
+                  itemBuilder: (context, index) {
+                    final o = order.orders[index];
+                    return OrderHistoryCard(
+                      order: o,
+                      onTap: () => context.push('/order/${o.id}'),
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -233,7 +337,7 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.transparent,
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.textSecondary,
-        currentIndex: 0,
+        currentIndex: _currentIndex,
         elevation: 0,
         type: BottomNavigationBarType.fixed,
         items: const [
@@ -245,7 +349,13 @@ class _HomePageState extends State<HomePage> {
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
         onTap: (index) {
-          // TODO: Handle navigation
+          setState(() => _currentIndex = index);
+          if (index == 1) {
+            final userId = context.read<AuthProvider>().firebaseUser?.uid;
+            if (userId != null) {
+              context.read<OrderProvider>().fetchOrderHistory(userId);
+            }
+          }
         },
       ),
     );

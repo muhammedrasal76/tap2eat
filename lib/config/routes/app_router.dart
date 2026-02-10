@@ -4,7 +4,13 @@ import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/onboarding_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/splash_page.dart';
+import '../../features/home/domain/entities/canteen_entity.dart';
 import '../../features/home/presentation/pages/home_page.dart';
+import '../../features/menu/presentation/pages/menu_page.dart';
+import '../../features/order/presentation/pages/checkout_page.dart';
+import '../../features/order/presentation/pages/order_confirmation_page.dart';
+import '../../features/order/presentation/pages/order_detail_page.dart';
+import '../../features/order/presentation/pages/order_history_page.dart';
 import 'route_names.dart';
 
 /// App router configuration using GoRouter
@@ -57,25 +63,44 @@ class AppRouter {
       GoRoute(
         path: RouteNames.menu,
         name: 'menu',
-        builder: (context, state) => const Scaffold(
-          body: Center(child: Text('Menu Page - To be implemented')),
-        ),
+        builder: (context, state) {
+          // Get canteen from extra parameter
+          final canteen = state.extra as CanteenEntity?;
+          if (canteen == null) {
+            return const Scaffold(
+              body: Center(child: Text('Error: Canteen not found')),
+            );
+          }
+          return MenuPage(canteen: canteen);
+        },
       ),
 
       // Order routes
       GoRoute(
         path: RouteNames.checkout,
         name: 'checkout',
-        builder: (context, state) => const Scaffold(
-          body: Center(child: Text('Checkout Page - To be implemented')),
-        ),
+        builder: (context, state) => const CheckoutPage(),
+      ),
+      GoRoute(
+        path: RouteNames.orderConfirmation,
+        name: 'order-confirmation',
+        builder: (context, state) {
+          final orderId = state.extra as String?;
+          return OrderConfirmationPage(orderId: orderId);
+        },
       ),
       GoRoute(
         path: RouteNames.orderHistory,
         name: 'order-history',
-        builder: (context, state) => const Scaffold(
-          body: Center(child: Text('Order History - To be implemented')),
-        ),
+        builder: (context, state) => const OrderHistoryPage(),
+      ),
+      GoRoute(
+        path: RouteNames.orderDetail,
+        name: 'order-detail',
+        builder: (context, state) {
+          final orderId = state.pathParameters['orderId']!;
+          return OrderDetailPage(orderId: orderId);
+        },
       ),
 
       // Delivery routes

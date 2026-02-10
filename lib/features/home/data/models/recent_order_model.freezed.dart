@@ -43,7 +43,7 @@ mixin _$RecentOrderModel {
   @JsonKey(name: 'delivery_student_id')
   String? get deliveryStudentId => throw _privateConstructorUsedError;
   @JsonKey(name: 'delivery_fee')
-  double? get deliveryFee => throw _privateConstructorUsedError;
+  double get deliveryFee => throw _privateConstructorUsedError;
   @JsonKey(
     name: 'created_at',
     fromJson: _timestampToDateTime,
@@ -90,7 +90,7 @@ abstract class $RecentOrderModelCopyWith<$Res> {
     @JsonKey(name: 'fulfillment_type') String fulfillmentType,
     String status,
     @JsonKey(name: 'delivery_student_id') String? deliveryStudentId,
-    @JsonKey(name: 'delivery_fee') double? deliveryFee,
+    @JsonKey(name: 'delivery_fee') double deliveryFee,
     @JsonKey(
       name: 'created_at',
       fromJson: _timestampToDateTime,
@@ -131,7 +131,7 @@ class _$RecentOrderModelCopyWithImpl<$Res, $Val extends RecentOrderModel>
     Object? fulfillmentType = null,
     Object? status = null,
     Object? deliveryStudentId = freezed,
-    Object? deliveryFee = freezed,
+    Object? deliveryFee = null,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -177,10 +177,10 @@ class _$RecentOrderModelCopyWithImpl<$Res, $Val extends RecentOrderModel>
                 ? _value.deliveryStudentId
                 : deliveryStudentId // ignore: cast_nullable_to_non_nullable
                       as String?,
-            deliveryFee: freezed == deliveryFee
+            deliveryFee: null == deliveryFee
                 ? _value.deliveryFee
                 : deliveryFee // ignore: cast_nullable_to_non_nullable
-                      as double?,
+                      as double,
             createdAt: null == createdAt
                 ? _value.createdAt
                 : createdAt // ignore: cast_nullable_to_non_nullable
@@ -220,7 +220,7 @@ abstract class _$$RecentOrderModelImplCopyWith<$Res>
     @JsonKey(name: 'fulfillment_type') String fulfillmentType,
     String status,
     @JsonKey(name: 'delivery_student_id') String? deliveryStudentId,
-    @JsonKey(name: 'delivery_fee') double? deliveryFee,
+    @JsonKey(name: 'delivery_fee') double deliveryFee,
     @JsonKey(
       name: 'created_at',
       fromJson: _timestampToDateTime,
@@ -260,7 +260,7 @@ class __$$RecentOrderModelImplCopyWithImpl<$Res>
     Object? fulfillmentType = null,
     Object? status = null,
     Object? deliveryStudentId = freezed,
-    Object? deliveryFee = freezed,
+    Object? deliveryFee = null,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -306,10 +306,10 @@ class __$$RecentOrderModelImplCopyWithImpl<$Res>
             ? _value.deliveryStudentId
             : deliveryStudentId // ignore: cast_nullable_to_non_nullable
                   as String?,
-        deliveryFee: freezed == deliveryFee
+        deliveryFee: null == deliveryFee
             ? _value.deliveryFee
             : deliveryFee // ignore: cast_nullable_to_non_nullable
-                  as double?,
+                  as double,
         createdAt: null == createdAt
             ? _value.createdAt
             : createdAt // ignore: cast_nullable_to_non_nullable
@@ -342,7 +342,7 @@ class _$RecentOrderModelImpl extends _RecentOrderModel {
     @JsonKey(name: 'fulfillment_type') required this.fulfillmentType,
     required this.status,
     @JsonKey(name: 'delivery_student_id') this.deliveryStudentId,
-    @JsonKey(name: 'delivery_fee') this.deliveryFee,
+    @JsonKey(name: 'delivery_fee') this.deliveryFee = 0,
     @JsonKey(
       name: 'created_at',
       fromJson: _timestampToDateTime,
@@ -400,7 +400,7 @@ class _$RecentOrderModelImpl extends _RecentOrderModel {
   final String? deliveryStudentId;
   @override
   @JsonKey(name: 'delivery_fee')
-  final double? deliveryFee;
+  final double deliveryFee;
   @override
   @JsonKey(
     name: 'created_at',
@@ -503,7 +503,7 @@ abstract class _RecentOrderModel extends RecentOrderModel {
     @JsonKey(name: 'fulfillment_type') required final String fulfillmentType,
     required final String status,
     @JsonKey(name: 'delivery_student_id') final String? deliveryStudentId,
-    @JsonKey(name: 'delivery_fee') final double? deliveryFee,
+    @JsonKey(name: 'delivery_fee') final double deliveryFee,
     @JsonKey(
       name: 'created_at',
       fromJson: _timestampToDateTime,
@@ -555,7 +555,7 @@ abstract class _RecentOrderModel extends RecentOrderModel {
   String? get deliveryStudentId;
   @override
   @JsonKey(name: 'delivery_fee')
-  double? get deliveryFee;
+  double get deliveryFee;
   @override
   @JsonKey(
     name: 'created_at',
@@ -585,13 +585,11 @@ OrderItemModel _$OrderItemModelFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$OrderItemModel {
-  @JsonKey(name: 'menu_item_id')
+  @JsonKey(name: 'id')
   String get menuItemId => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
   int get quantity => throw _privateConstructorUsedError;
   double get price => throw _privateConstructorUsedError;
-  @JsonKey(name: 'image_url')
-  String? get imageUrl => throw _privateConstructorUsedError;
 
   /// Serializes this OrderItemModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -611,11 +609,10 @@ abstract class $OrderItemModelCopyWith<$Res> {
   ) = _$OrderItemModelCopyWithImpl<$Res, OrderItemModel>;
   @useResult
   $Res call({
-    @JsonKey(name: 'menu_item_id') String menuItemId,
+    @JsonKey(name: 'id') String menuItemId,
     String name,
     int quantity,
     double price,
-    @JsonKey(name: 'image_url') String? imageUrl,
   });
 }
 
@@ -638,7 +635,6 @@ class _$OrderItemModelCopyWithImpl<$Res, $Val extends OrderItemModel>
     Object? name = null,
     Object? quantity = null,
     Object? price = null,
-    Object? imageUrl = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -658,10 +654,6 @@ class _$OrderItemModelCopyWithImpl<$Res, $Val extends OrderItemModel>
                 ? _value.price
                 : price // ignore: cast_nullable_to_non_nullable
                       as double,
-            imageUrl: freezed == imageUrl
-                ? _value.imageUrl
-                : imageUrl // ignore: cast_nullable_to_non_nullable
-                      as String?,
           )
           as $Val,
     );
@@ -678,11 +670,10 @@ abstract class _$$OrderItemModelImplCopyWith<$Res>
   @override
   @useResult
   $Res call({
-    @JsonKey(name: 'menu_item_id') String menuItemId,
+    @JsonKey(name: 'id') String menuItemId,
     String name,
     int quantity,
     double price,
-    @JsonKey(name: 'image_url') String? imageUrl,
   });
 }
 
@@ -704,7 +695,6 @@ class __$$OrderItemModelImplCopyWithImpl<$Res>
     Object? name = null,
     Object? quantity = null,
     Object? price = null,
-    Object? imageUrl = freezed,
   }) {
     return _then(
       _$OrderItemModelImpl(
@@ -724,10 +714,6 @@ class __$$OrderItemModelImplCopyWithImpl<$Res>
             ? _value.price
             : price // ignore: cast_nullable_to_non_nullable
                   as double,
-        imageUrl: freezed == imageUrl
-            ? _value.imageUrl
-            : imageUrl // ignore: cast_nullable_to_non_nullable
-                  as String?,
       ),
     );
   }
@@ -737,18 +723,17 @@ class __$$OrderItemModelImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$OrderItemModelImpl extends _OrderItemModel {
   const _$OrderItemModelImpl({
-    @JsonKey(name: 'menu_item_id') required this.menuItemId,
+    @JsonKey(name: 'id') required this.menuItemId,
     required this.name,
     required this.quantity,
     required this.price,
-    @JsonKey(name: 'image_url') this.imageUrl,
   }) : super._();
 
   factory _$OrderItemModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$OrderItemModelImplFromJson(json);
 
   @override
-  @JsonKey(name: 'menu_item_id')
+  @JsonKey(name: 'id')
   final String menuItemId;
   @override
   final String name;
@@ -756,13 +741,10 @@ class _$OrderItemModelImpl extends _OrderItemModel {
   final int quantity;
   @override
   final double price;
-  @override
-  @JsonKey(name: 'image_url')
-  final String? imageUrl;
 
   @override
   String toString() {
-    return 'OrderItemModel(menuItemId: $menuItemId, name: $name, quantity: $quantity, price: $price, imageUrl: $imageUrl)';
+    return 'OrderItemModel(menuItemId: $menuItemId, name: $name, quantity: $quantity, price: $price)';
   }
 
   @override
@@ -775,15 +757,13 @@ class _$OrderItemModelImpl extends _OrderItemModel {
             (identical(other.name, name) || other.name == name) &&
             (identical(other.quantity, quantity) ||
                 other.quantity == quantity) &&
-            (identical(other.price, price) || other.price == price) &&
-            (identical(other.imageUrl, imageUrl) ||
-                other.imageUrl == imageUrl));
+            (identical(other.price, price) || other.price == price));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode =>
-      Object.hash(runtimeType, menuItemId, name, quantity, price, imageUrl);
+      Object.hash(runtimeType, menuItemId, name, quantity, price);
 
   /// Create a copy of OrderItemModel
   /// with the given fields replaced by the non-null parameter values.
@@ -804,11 +784,10 @@ class _$OrderItemModelImpl extends _OrderItemModel {
 
 abstract class _OrderItemModel extends OrderItemModel {
   const factory _OrderItemModel({
-    @JsonKey(name: 'menu_item_id') required final String menuItemId,
+    @JsonKey(name: 'id') required final String menuItemId,
     required final String name,
     required final int quantity,
     required final double price,
-    @JsonKey(name: 'image_url') final String? imageUrl,
   }) = _$OrderItemModelImpl;
   const _OrderItemModel._() : super._();
 
@@ -816,7 +795,7 @@ abstract class _OrderItemModel extends OrderItemModel {
       _$OrderItemModelImpl.fromJson;
 
   @override
-  @JsonKey(name: 'menu_item_id')
+  @JsonKey(name: 'id')
   String get menuItemId;
   @override
   String get name;
@@ -824,9 +803,6 @@ abstract class _OrderItemModel extends OrderItemModel {
   int get quantity;
   @override
   double get price;
-  @override
-  @JsonKey(name: 'image_url')
-  String? get imageUrl;
 
   /// Create a copy of OrderItemModel
   /// with the given fields replaced by the non-null parameter values.

@@ -21,7 +21,7 @@ _$RecentOrderModelImpl _$$RecentOrderModelImplFromJson(
   fulfillmentType: json['fulfillment_type'] as String,
   status: json['status'] as String,
   deliveryStudentId: json['delivery_student_id'] as String?,
-  deliveryFee: (json['delivery_fee'] as num?)?.toDouble(),
+  deliveryFee: (json['delivery_fee'] as num?)?.toDouble() ?? 0,
   createdAt: _timestampToDateTime(json['created_at']),
   updatedAt: _timestampToDateTime(json['updated_at']),
 );
@@ -46,19 +46,17 @@ Map<String, dynamic> _$$RecentOrderModelImplToJson(
 
 _$OrderItemModelImpl _$$OrderItemModelImplFromJson(Map<String, dynamic> json) =>
     _$OrderItemModelImpl(
-      menuItemId: json['menu_item_id'] as String,
+      menuItemId: json['id'] as String,
       name: json['name'] as String,
       quantity: (json['quantity'] as num).toInt(),
       price: (json['price'] as num).toDouble(),
-      imageUrl: json['image_url'] as String?,
     );
 
 Map<String, dynamic> _$$OrderItemModelImplToJson(
   _$OrderItemModelImpl instance,
 ) => <String, dynamic>{
-  'menu_item_id': instance.menuItemId,
+  'id': instance.menuItemId,
   'name': instance.name,
   'quantity': instance.quantity,
   'price': instance.price,
-  'image_url': instance.imageUrl,
 };

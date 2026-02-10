@@ -34,30 +34,7 @@ class CanteenCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image
-            Container(
-              height: 144,
-              decoration: BoxDecoration(
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(14)),
-                color: AppColors.borderColor,
-                image: canteen.imageUrl != null
-                    ? DecorationImage(
-                        image: NetworkImage(canteen.imageUrl!),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
-              ),
-              child: canteen.imageUrl == null
-                  ? const Center(
-                      child: Icon(
-                        Icons.restaurant_menu,
-                        color: AppColors.textSecondary,
-                        size: 48,
-                      ),
-                    )
-                  : null,
-            ),
+          
 
             // Content
             Padding(

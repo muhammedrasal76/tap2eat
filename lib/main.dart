@@ -12,6 +12,13 @@ import 'features/home/domain/usecases/get_recent_orders_usecase.dart';
 import 'features/home/domain/usecases/get_settings_usecase.dart';
 import 'features/home/domain/usecases/search_canteens_usecase.dart';
 import 'features/home/presentation/providers/home_provider.dart';
+import 'features/menu/presentation/providers/cart_provider.dart';
+import 'features/order/data/datasources/order_remote_datasource.dart';
+import 'features/order/data/repositories/order_repository_impl.dart';
+import 'features/order/domain/usecases/create_order_usecase.dart';
+import 'features/order/domain/usecases/get_order_detail_usecase.dart';
+import 'features/order/domain/usecases/get_order_history_usecase.dart';
+import 'features/order/presentation/providers/order_provider.dart';
 import 'shared/providers/firebase_provider.dart';
 
 void main() async {
@@ -69,20 +76,25 @@ class MyApp extends StatelessWidget {
           },
         ),
 
-        // TODO: Add more providers as features are implemented
-        // ChangeNotifierProvider(create: (_) => MenuProvider()),
-        // ChangeNotifierProvider(create: (_) => OrderProvider()),
-        // ChangeNotifierProvider(create: (_) => CartProvider()),
-        // ChangeNotifierProvider(create: (_) => OrderTrackingProvider()),
-        // ChangeNotifierProvider(create: (_) => DeliveryProvider()),
-        // ChangeNotifierProvider(create: (_) => EarningsProvider()),
-        // ChangeNotifierProvider(create: (_) => NotificationProvider()),
+        // Cart Provider
+        ChangeNotifierProvider(create: (_) => CartProvider()),
 
-        // Firebase Auth Stream
-        // StreamProvider<User?>(
-        //   create: (_) => FirebaseAuth.instance.authStateChanges(),
-        //   initialData: null,
-        // ),
+        // Order Provider
+        ChangeNotifierProvider(
+          create: (context) {
+            final orderDataSource = OrderRemoteDataSourceImpl(
+              firestore: FirebaseFirestore.instance,
+            );
+            final orderRepository = OrderRepositoryImpl(
+              remoteDataSource: orderDataSource,
+            );
+            return OrderProvider(
+              createOrderUseCase: CreateOrderUseCase(orderRepository),
+              getOrderHistoryUseCase: GetOrderHistoryUseCase(orderRepository),
+              getOrderDetailUseCase: GetOrderDetailUseCase(orderRepository),
+            );
+          },
+        ),
       ],
       child: MaterialApp.router(
         title: 'Tap2Eat',

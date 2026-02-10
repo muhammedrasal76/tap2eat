@@ -9,13 +9,14 @@ class MenuItemModel with _$MenuItemModel {
   const MenuItemModel._();
 
   const factory MenuItemModel({
-    required String id,
+    @Default('') String id,
     required String name,
-    required String description,
+    @Default('') String description,
     required double price,
     required String category,
-    @JsonKey(name: 'image_url') required String imageUrl,
-    @JsonKey(name: 'is_available') required bool isAvailable,
+    @JsonKey(name: 'image_url') String? imageUrl,
+    @JsonKey(name: 'is_available') @Default(true) bool isAvailable,
+    @Default(50) int stock,
   }) = _MenuItemModel;
 
   factory MenuItemModel.fromJson(Map<String, dynamic> json) =>
@@ -31,6 +32,7 @@ class MenuItemModel with _$MenuItemModel {
       category: category,
       imageUrl: imageUrl,
       isAvailable: isAvailable,
+      stock: stock,
     );
   }
 }

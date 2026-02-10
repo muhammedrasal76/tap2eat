@@ -16,7 +16,7 @@ class RecentOrderEntity with _$RecentOrderEntity {
     required FulfillmentType fulfillmentType,
     required OrderStatus status,
     String? deliveryStudentId,
-    double? deliveryFee,
+    required double deliveryFee,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _RecentOrderEntity;
@@ -29,6 +29,5 @@ class OrderItemEntity with _$OrderItemEntity {
     required String name,
     required int quantity,
     required double price,
-    String? imageUrl,
   }) = _OrderItemEntity;
 }

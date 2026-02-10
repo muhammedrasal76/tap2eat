@@ -27,7 +27,7 @@ mixin _$RecentOrderEntity {
   FulfillmentType get fulfillmentType => throw _privateConstructorUsedError;
   OrderStatus get status => throw _privateConstructorUsedError;
   String? get deliveryStudentId => throw _privateConstructorUsedError;
-  double? get deliveryFee => throw _privateConstructorUsedError;
+  double get deliveryFee => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
   DateTime get updatedAt => throw _privateConstructorUsedError;
 
@@ -56,7 +56,7 @@ abstract class $RecentOrderEntityCopyWith<$Res> {
     FulfillmentType fulfillmentType,
     OrderStatus status,
     String? deliveryStudentId,
-    double? deliveryFee,
+    double deliveryFee,
     DateTime createdAt,
     DateTime updatedAt,
   });
@@ -87,7 +87,7 @@ class _$RecentOrderEntityCopyWithImpl<$Res, $Val extends RecentOrderEntity>
     Object? fulfillmentType = null,
     Object? status = null,
     Object? deliveryStudentId = freezed,
-    Object? deliveryFee = freezed,
+    Object? deliveryFee = null,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -133,10 +133,10 @@ class _$RecentOrderEntityCopyWithImpl<$Res, $Val extends RecentOrderEntity>
                 ? _value.deliveryStudentId
                 : deliveryStudentId // ignore: cast_nullable_to_non_nullable
                       as String?,
-            deliveryFee: freezed == deliveryFee
+            deliveryFee: null == deliveryFee
                 ? _value.deliveryFee
                 : deliveryFee // ignore: cast_nullable_to_non_nullable
-                      as double?,
+                      as double,
             createdAt: null == createdAt
                 ? _value.createdAt
                 : createdAt // ignore: cast_nullable_to_non_nullable
@@ -171,7 +171,7 @@ abstract class _$$RecentOrderEntityImplCopyWith<$Res>
     FulfillmentType fulfillmentType,
     OrderStatus status,
     String? deliveryStudentId,
-    double? deliveryFee,
+    double deliveryFee,
     DateTime createdAt,
     DateTime updatedAt,
   });
@@ -201,7 +201,7 @@ class __$$RecentOrderEntityImplCopyWithImpl<$Res>
     Object? fulfillmentType = null,
     Object? status = null,
     Object? deliveryStudentId = freezed,
-    Object? deliveryFee = freezed,
+    Object? deliveryFee = null,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -247,10 +247,10 @@ class __$$RecentOrderEntityImplCopyWithImpl<$Res>
             ? _value.deliveryStudentId
             : deliveryStudentId // ignore: cast_nullable_to_non_nullable
                   as String?,
-        deliveryFee: freezed == deliveryFee
+        deliveryFee: null == deliveryFee
             ? _value.deliveryFee
             : deliveryFee // ignore: cast_nullable_to_non_nullable
-                  as double?,
+                  as double,
         createdAt: null == createdAt
             ? _value.createdAt
             : createdAt // ignore: cast_nullable_to_non_nullable
@@ -278,7 +278,7 @@ class _$RecentOrderEntityImpl implements _RecentOrderEntity {
     required this.fulfillmentType,
     required this.status,
     this.deliveryStudentId,
-    this.deliveryFee,
+    required this.deliveryFee,
     required this.createdAt,
     required this.updatedAt,
   }) : _items = items;
@@ -310,7 +310,7 @@ class _$RecentOrderEntityImpl implements _RecentOrderEntity {
   @override
   final String? deliveryStudentId;
   @override
-  final double? deliveryFee;
+  final double deliveryFee;
   @override
   final DateTime createdAt;
   @override
@@ -392,7 +392,7 @@ abstract class _RecentOrderEntity implements RecentOrderEntity {
     required final FulfillmentType fulfillmentType,
     required final OrderStatus status,
     final String? deliveryStudentId,
-    final double? deliveryFee,
+    required final double deliveryFee,
     required final DateTime createdAt,
     required final DateTime updatedAt,
   }) = _$RecentOrderEntityImpl;
@@ -418,7 +418,7 @@ abstract class _RecentOrderEntity implements RecentOrderEntity {
   @override
   String? get deliveryStudentId;
   @override
-  double? get deliveryFee;
+  double get deliveryFee;
   @override
   DateTime get createdAt;
   @override
@@ -438,7 +438,6 @@ mixin _$OrderItemEntity {
   String get name => throw _privateConstructorUsedError;
   int get quantity => throw _privateConstructorUsedError;
   double get price => throw _privateConstructorUsedError;
-  String? get imageUrl => throw _privateConstructorUsedError;
 
   /// Create a copy of OrderItemEntity
   /// with the given fields replaced by the non-null parameter values.
@@ -454,13 +453,7 @@ abstract class $OrderItemEntityCopyWith<$Res> {
     $Res Function(OrderItemEntity) then,
   ) = _$OrderItemEntityCopyWithImpl<$Res, OrderItemEntity>;
   @useResult
-  $Res call({
-    String menuItemId,
-    String name,
-    int quantity,
-    double price,
-    String? imageUrl,
-  });
+  $Res call({String menuItemId, String name, int quantity, double price});
 }
 
 /// @nodoc
@@ -482,7 +475,6 @@ class _$OrderItemEntityCopyWithImpl<$Res, $Val extends OrderItemEntity>
     Object? name = null,
     Object? quantity = null,
     Object? price = null,
-    Object? imageUrl = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -502,10 +494,6 @@ class _$OrderItemEntityCopyWithImpl<$Res, $Val extends OrderItemEntity>
                 ? _value.price
                 : price // ignore: cast_nullable_to_non_nullable
                       as double,
-            imageUrl: freezed == imageUrl
-                ? _value.imageUrl
-                : imageUrl // ignore: cast_nullable_to_non_nullable
-                      as String?,
           )
           as $Val,
     );
@@ -521,13 +509,7 @@ abstract class _$$OrderItemEntityImplCopyWith<$Res>
   ) = __$$OrderItemEntityImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    String menuItemId,
-    String name,
-    int quantity,
-    double price,
-    String? imageUrl,
-  });
+  $Res call({String menuItemId, String name, int quantity, double price});
 }
 
 /// @nodoc
@@ -548,7 +530,6 @@ class __$$OrderItemEntityImplCopyWithImpl<$Res>
     Object? name = null,
     Object? quantity = null,
     Object? price = null,
-    Object? imageUrl = freezed,
   }) {
     return _then(
       _$OrderItemEntityImpl(
@@ -568,10 +549,6 @@ class __$$OrderItemEntityImplCopyWithImpl<$Res>
             ? _value.price
             : price // ignore: cast_nullable_to_non_nullable
                   as double,
-        imageUrl: freezed == imageUrl
-            ? _value.imageUrl
-            : imageUrl // ignore: cast_nullable_to_non_nullable
-                  as String?,
       ),
     );
   }
@@ -585,7 +562,6 @@ class _$OrderItemEntityImpl implements _OrderItemEntity {
     required this.name,
     required this.quantity,
     required this.price,
-    this.imageUrl,
   });
 
   @override
@@ -596,12 +572,10 @@ class _$OrderItemEntityImpl implements _OrderItemEntity {
   final int quantity;
   @override
   final double price;
-  @override
-  final String? imageUrl;
 
   @override
   String toString() {
-    return 'OrderItemEntity(menuItemId: $menuItemId, name: $name, quantity: $quantity, price: $price, imageUrl: $imageUrl)';
+    return 'OrderItemEntity(menuItemId: $menuItemId, name: $name, quantity: $quantity, price: $price)';
   }
 
   @override
@@ -614,14 +588,12 @@ class _$OrderItemEntityImpl implements _OrderItemEntity {
             (identical(other.name, name) || other.name == name) &&
             (identical(other.quantity, quantity) ||
                 other.quantity == quantity) &&
-            (identical(other.price, price) || other.price == price) &&
-            (identical(other.imageUrl, imageUrl) ||
-                other.imageUrl == imageUrl));
+            (identical(other.price, price) || other.price == price));
   }
 
   @override
   int get hashCode =>
-      Object.hash(runtimeType, menuItemId, name, quantity, price, imageUrl);
+      Object.hash(runtimeType, menuItemId, name, quantity, price);
 
   /// Create a copy of OrderItemEntity
   /// with the given fields replaced by the non-null parameter values.
@@ -641,7 +613,6 @@ abstract class _OrderItemEntity implements OrderItemEntity {
     required final String name,
     required final int quantity,
     required final double price,
-    final String? imageUrl,
   }) = _$OrderItemEntityImpl;
 
   @override
@@ -652,8 +623,6 @@ abstract class _OrderItemEntity implements OrderItemEntity {
   int get quantity;
   @override
   double get price;
-  @override
-  String? get imageUrl;
 
   /// Create a copy of OrderItemEntity
   /// with the given fields replaced by the non-null parameter values.

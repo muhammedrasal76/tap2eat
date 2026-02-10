@@ -38,7 +38,7 @@ class RecentOrderModel with _$RecentOrderModel {
     @JsonKey(name: 'fulfillment_type') required String fulfillmentType,
     required String status,
     @JsonKey(name: 'delivery_student_id') String? deliveryStudentId,
-    @JsonKey(name: 'delivery_fee') double? deliveryFee,
+    @JsonKey(name: 'delivery_fee') @Default(0) double deliveryFee,
     @JsonKey(
       name: 'created_at',
       fromJson: _timestampToDateTime,
@@ -81,11 +81,10 @@ class OrderItemModel with _$OrderItemModel {
   const OrderItemModel._();
 
   const factory OrderItemModel({
-    @JsonKey(name: 'menu_item_id') required String menuItemId,
+    @JsonKey(name: 'id') required String menuItemId,
     required String name,
     required int quantity,
     required double price,
-    @JsonKey(name: 'image_url') String? imageUrl,
   }) = _OrderItemModel;
 
   factory OrderItemModel.fromJson(Map<String, dynamic> json) =>
@@ -98,7 +97,6 @@ class OrderItemModel with _$OrderItemModel {
       name: name,
       quantity: quantity,
       price: price,
-      imageUrl: imageUrl,
     );
   }
 }

@@ -80,13 +80,15 @@ class AuthProvider with ChangeNotifier {
         'email': email,
         'name': name,
         'role': role.value,
-        'phoneNumber': phoneNumber,
-        'classroomNumber': classroomNumber,
-        'blockName': blockName,
-        if (role == UserRole.student && classId != null) 'classId': classId,
+        if (role == UserRole.student || role == UserRole.teacher) ...{
+          'phone_number': phoneNumber,
+          'classroom_number': classroomNumber,
+          'block_name': blockName,
+        },
+        if (role == UserRole.student && classId != null) 'class_id': classId,
         if (role == UserRole.teacher && designation != null)
           'designation': designation,
-        'createdAt': FieldValue.serverTimestamp(),
+        'created_at': FieldValue.serverTimestamp(),
       });
 
       // 3. Update local state

@@ -22,7 +22,6 @@ mixin _$CanteenEntity {
   List<MenuItemEntity> get menuItems => throw _privateConstructorUsedError;
   int get maxConcurrentOrders => throw _privateConstructorUsedError;
   bool get isActive => throw _privateConstructorUsedError;
-  String? get imageUrl => throw _privateConstructorUsedError;
 
   /// Create a copy of CanteenEntity
   /// with the given fields replaced by the non-null parameter values.
@@ -44,7 +43,6 @@ abstract class $CanteenEntityCopyWith<$Res> {
     List<MenuItemEntity> menuItems,
     int maxConcurrentOrders,
     bool isActive,
-    String? imageUrl,
   });
 }
 
@@ -68,7 +66,6 @@ class _$CanteenEntityCopyWithImpl<$Res, $Val extends CanteenEntity>
     Object? menuItems = null,
     Object? maxConcurrentOrders = null,
     Object? isActive = null,
-    Object? imageUrl = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -92,10 +89,6 @@ class _$CanteenEntityCopyWithImpl<$Res, $Val extends CanteenEntity>
                 ? _value.isActive
                 : isActive // ignore: cast_nullable_to_non_nullable
                       as bool,
-            imageUrl: freezed == imageUrl
-                ? _value.imageUrl
-                : imageUrl // ignore: cast_nullable_to_non_nullable
-                      as String?,
           )
           as $Val,
     );
@@ -117,7 +110,6 @@ abstract class _$$CanteenEntityImplCopyWith<$Res>
     List<MenuItemEntity> menuItems,
     int maxConcurrentOrders,
     bool isActive,
-    String? imageUrl,
   });
 }
 
@@ -140,7 +132,6 @@ class __$$CanteenEntityImplCopyWithImpl<$Res>
     Object? menuItems = null,
     Object? maxConcurrentOrders = null,
     Object? isActive = null,
-    Object? imageUrl = freezed,
   }) {
     return _then(
       _$CanteenEntityImpl(
@@ -164,10 +155,6 @@ class __$$CanteenEntityImplCopyWithImpl<$Res>
             ? _value.isActive
             : isActive // ignore: cast_nullable_to_non_nullable
                   as bool,
-        imageUrl: freezed == imageUrl
-            ? _value.imageUrl
-            : imageUrl // ignore: cast_nullable_to_non_nullable
-                  as String?,
       ),
     );
   }
@@ -182,7 +169,6 @@ class _$CanteenEntityImpl implements _CanteenEntity {
     required final List<MenuItemEntity> menuItems,
     required this.maxConcurrentOrders,
     required this.isActive,
-    this.imageUrl,
   }) : _menuItems = menuItems;
 
   @override
@@ -201,12 +187,10 @@ class _$CanteenEntityImpl implements _CanteenEntity {
   final int maxConcurrentOrders;
   @override
   final bool isActive;
-  @override
-  final String? imageUrl;
 
   @override
   String toString() {
-    return 'CanteenEntity(id: $id, name: $name, menuItems: $menuItems, maxConcurrentOrders: $maxConcurrentOrders, isActive: $isActive, imageUrl: $imageUrl)';
+    return 'CanteenEntity(id: $id, name: $name, menuItems: $menuItems, maxConcurrentOrders: $maxConcurrentOrders, isActive: $isActive)';
   }
 
   @override
@@ -223,9 +207,7 @@ class _$CanteenEntityImpl implements _CanteenEntity {
             (identical(other.maxConcurrentOrders, maxConcurrentOrders) ||
                 other.maxConcurrentOrders == maxConcurrentOrders) &&
             (identical(other.isActive, isActive) ||
-                other.isActive == isActive) &&
-            (identical(other.imageUrl, imageUrl) ||
-                other.imageUrl == imageUrl));
+                other.isActive == isActive));
   }
 
   @override
@@ -236,7 +218,6 @@ class _$CanteenEntityImpl implements _CanteenEntity {
     const DeepCollectionEquality().hash(_menuItems),
     maxConcurrentOrders,
     isActive,
-    imageUrl,
   );
 
   /// Create a copy of CanteenEntity
@@ -255,7 +236,6 @@ abstract class _CanteenEntity implements CanteenEntity {
     required final List<MenuItemEntity> menuItems,
     required final int maxConcurrentOrders,
     required final bool isActive,
-    final String? imageUrl,
   }) = _$CanteenEntityImpl;
 
   @override
@@ -268,8 +248,6 @@ abstract class _CanteenEntity implements CanteenEntity {
   int get maxConcurrentOrders;
   @override
   bool get isActive;
-  @override
-  String? get imageUrl;
 
   /// Create a copy of CanteenEntity
   /// with the given fields replaced by the non-null parameter values.

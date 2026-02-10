@@ -21,6 +21,7 @@ class RouteNames {
   static const String checkout = '/checkout';
   static const String orderHistory = '/order-history';
   static const String orderDetail = '/order/:orderId';
+  static const String orderConfirmation = '/order-confirmation';
   static const String orderTracking = '/order/:orderId/tracking';
 
   // Delivery routes (delivery students only)

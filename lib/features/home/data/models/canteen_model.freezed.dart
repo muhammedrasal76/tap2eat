@@ -23,14 +23,16 @@ CanteenModel _$CanteenModelFromJson(Map<String, dynamic> json) {
 mixin _$CanteenModel {
   String get id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
-  @JsonKey(name: 'menu_items')
+  @JsonKey(
+    name: 'menu_items',
+    fromJson: _menuItemsFromJson,
+    toJson: _menuItemsToJson,
+  )
   List<MenuItemModel> get menuItems => throw _privateConstructorUsedError;
   @JsonKey(name: 'max_concurrent_orders')
   int get maxConcurrentOrders => throw _privateConstructorUsedError;
   @JsonKey(name: 'is_active')
   bool get isActive => throw _privateConstructorUsedError;
-  @JsonKey(name: 'image_url')
-  String? get imageUrl => throw _privateConstructorUsedError;
 
   /// Serializes this CanteenModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -52,10 +54,14 @@ abstract class $CanteenModelCopyWith<$Res> {
   $Res call({
     String id,
     String name,
-    @JsonKey(name: 'menu_items') List<MenuItemModel> menuItems,
+    @JsonKey(
+      name: 'menu_items',
+      fromJson: _menuItemsFromJson,
+      toJson: _menuItemsToJson,
+    )
+    List<MenuItemModel> menuItems,
     @JsonKey(name: 'max_concurrent_orders') int maxConcurrentOrders,
     @JsonKey(name: 'is_active') bool isActive,
-    @JsonKey(name: 'image_url') String? imageUrl,
   });
 }
 
@@ -79,7 +85,6 @@ class _$CanteenModelCopyWithImpl<$Res, $Val extends CanteenModel>
     Object? menuItems = null,
     Object? maxConcurrentOrders = null,
     Object? isActive = null,
-    Object? imageUrl = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -103,10 +108,6 @@ class _$CanteenModelCopyWithImpl<$Res, $Val extends CanteenModel>
                 ? _value.isActive
                 : isActive // ignore: cast_nullable_to_non_nullable
                       as bool,
-            imageUrl: freezed == imageUrl
-                ? _value.imageUrl
-                : imageUrl // ignore: cast_nullable_to_non_nullable
-                      as String?,
           )
           as $Val,
     );
@@ -125,10 +126,14 @@ abstract class _$$CanteenModelImplCopyWith<$Res>
   $Res call({
     String id,
     String name,
-    @JsonKey(name: 'menu_items') List<MenuItemModel> menuItems,
+    @JsonKey(
+      name: 'menu_items',
+      fromJson: _menuItemsFromJson,
+      toJson: _menuItemsToJson,
+    )
+    List<MenuItemModel> menuItems,
     @JsonKey(name: 'max_concurrent_orders') int maxConcurrentOrders,
     @JsonKey(name: 'is_active') bool isActive,
-    @JsonKey(name: 'image_url') String? imageUrl,
   });
 }
 
@@ -151,7 +156,6 @@ class __$$CanteenModelImplCopyWithImpl<$Res>
     Object? menuItems = null,
     Object? maxConcurrentOrders = null,
     Object? isActive = null,
-    Object? imageUrl = freezed,
   }) {
     return _then(
       _$CanteenModelImpl(
@@ -175,10 +179,6 @@ class __$$CanteenModelImplCopyWithImpl<$Res>
             ? _value.isActive
             : isActive // ignore: cast_nullable_to_non_nullable
                   as bool,
-        imageUrl: freezed == imageUrl
-            ? _value.imageUrl
-            : imageUrl // ignore: cast_nullable_to_non_nullable
-                  as String?,
       ),
     );
   }
@@ -190,10 +190,14 @@ class _$CanteenModelImpl extends _CanteenModel {
   const _$CanteenModelImpl({
     required this.id,
     required this.name,
-    @JsonKey(name: 'menu_items') required final List<MenuItemModel> menuItems,
-    @JsonKey(name: 'max_concurrent_orders') required this.maxConcurrentOrders,
-    @JsonKey(name: 'is_active') required this.isActive,
-    @JsonKey(name: 'image_url') this.imageUrl,
+    @JsonKey(
+      name: 'menu_items',
+      fromJson: _menuItemsFromJson,
+      toJson: _menuItemsToJson,
+    )
+    final List<MenuItemModel> menuItems = const [],
+    @JsonKey(name: 'max_concurrent_orders') this.maxConcurrentOrders = 10,
+    @JsonKey(name: 'is_active') this.isActive = true,
   }) : _menuItems = menuItems,
        super._();
 
@@ -206,7 +210,11 @@ class _$CanteenModelImpl extends _CanteenModel {
   final String name;
   final List<MenuItemModel> _menuItems;
   @override
-  @JsonKey(name: 'menu_items')
+  @JsonKey(
+    name: 'menu_items',
+    fromJson: _menuItemsFromJson,
+    toJson: _menuItemsToJson,
+  )
   List<MenuItemModel> get menuItems {
     if (_menuItems is EqualUnmodifiableListView) return _menuItems;
     // ignore: implicit_dynamic_type
@@ -219,13 +227,10 @@ class _$CanteenModelImpl extends _CanteenModel {
   @override
   @JsonKey(name: 'is_active')
   final bool isActive;
-  @override
-  @JsonKey(name: 'image_url')
-  final String? imageUrl;
 
   @override
   String toString() {
-    return 'CanteenModel(id: $id, name: $name, menuItems: $menuItems, maxConcurrentOrders: $maxConcurrentOrders, isActive: $isActive, imageUrl: $imageUrl)';
+    return 'CanteenModel(id: $id, name: $name, menuItems: $menuItems, maxConcurrentOrders: $maxConcurrentOrders, isActive: $isActive)';
   }
 
   @override
@@ -242,9 +247,7 @@ class _$CanteenModelImpl extends _CanteenModel {
             (identical(other.maxConcurrentOrders, maxConcurrentOrders) ||
                 other.maxConcurrentOrders == maxConcurrentOrders) &&
             (identical(other.isActive, isActive) ||
-                other.isActive == isActive) &&
-            (identical(other.imageUrl, imageUrl) ||
-                other.imageUrl == imageUrl));
+                other.isActive == isActive));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -256,7 +259,6 @@ class _$CanteenModelImpl extends _CanteenModel {
     const DeepCollectionEquality().hash(_menuItems),
     maxConcurrentOrders,
     isActive,
-    imageUrl,
   );
 
   /// Create a copy of CanteenModel
@@ -277,11 +279,14 @@ abstract class _CanteenModel extends CanteenModel {
   const factory _CanteenModel({
     required final String id,
     required final String name,
-    @JsonKey(name: 'menu_items') required final List<MenuItemModel> menuItems,
-    @JsonKey(name: 'max_concurrent_orders')
-    required final int maxConcurrentOrders,
-    @JsonKey(name: 'is_active') required final bool isActive,
-    @JsonKey(name: 'image_url') final String? imageUrl,
+    @JsonKey(
+      name: 'menu_items',
+      fromJson: _menuItemsFromJson,
+      toJson: _menuItemsToJson,
+    )
+    final List<MenuItemModel> menuItems,
+    @JsonKey(name: 'max_concurrent_orders') final int maxConcurrentOrders,
+    @JsonKey(name: 'is_active') final bool isActive,
   }) = _$CanteenModelImpl;
   const _CanteenModel._() : super._();
 
@@ -293,7 +298,11 @@ abstract class _CanteenModel extends CanteenModel {
   @override
   String get name;
   @override
-  @JsonKey(name: 'menu_items')
+  @JsonKey(
+    name: 'menu_items',
+    fromJson: _menuItemsFromJson,
+    toJson: _menuItemsToJson,
+  )
   List<MenuItemModel> get menuItems;
   @override
   @JsonKey(name: 'max_concurrent_orders')
@@ -301,9 +310,6 @@ abstract class _CanteenModel extends CanteenModel {
   @override
   @JsonKey(name: 'is_active')
   bool get isActive;
-  @override
-  @JsonKey(name: 'image_url')
-  String? get imageUrl;
 
   /// Create a copy of CanteenModel
   /// with the given fields replaced by the non-null parameter values.

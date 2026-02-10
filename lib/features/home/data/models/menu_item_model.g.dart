@@ -8,13 +8,14 @@ part of 'menu_item_model.dart';
 
 _$MenuItemModelImpl _$$MenuItemModelImplFromJson(Map<String, dynamic> json) =>
     _$MenuItemModelImpl(
-      id: json['id'] as String,
+      id: json['id'] as String? ?? '',
       name: json['name'] as String,
-      description: json['description'] as String,
+      description: json['description'] as String? ?? '',
       price: (json['price'] as num).toDouble(),
       category: json['category'] as String,
-      imageUrl: json['image_url'] as String,
-      isAvailable: json['is_available'] as bool,
+      imageUrl: json['image_url'] as String?,
+      isAvailable: json['is_available'] as bool? ?? true,
+      stock: (json['stock'] as num?)?.toInt() ?? 50,
     );
 
 Map<String, dynamic> _$$MenuItemModelImplToJson(_$MenuItemModelImpl instance) =>
@@ -26,4 +27,5 @@ Map<String, dynamic> _$$MenuItemModelImplToJson(_$MenuItemModelImpl instance) =>
       'category': instance.category,
       'image_url': instance.imageUrl,
       'is_available': instance.isAvailable,
+      'stock': instance.stock,
     };

@@ -23,10 +23,10 @@ SettingsModel _$SettingsModelFromJson(Map<String, dynamic> json) {
 mixin _$SettingsModel {
   @JsonKey(
     name: 'break_slots',
-    fromJson: _timestampListToDateTime,
-    toJson: _dateTimeListToTimestamp,
+    fromJson: _breakSlotsFromJson,
+    toJson: _breakSlotsToJson,
   )
-  List<DateTime> get breakSlots => throw _privateConstructorUsedError;
+  List<BreakSlotModel> get breakSlots => throw _privateConstructorUsedError;
   @JsonKey(name: 'order_cutoff_minutes')
   int get orderCutoffMinutes => throw _privateConstructorUsedError;
 
@@ -50,10 +50,10 @@ abstract class $SettingsModelCopyWith<$Res> {
   $Res call({
     @JsonKey(
       name: 'break_slots',
-      fromJson: _timestampListToDateTime,
-      toJson: _dateTimeListToTimestamp,
+      fromJson: _breakSlotsFromJson,
+      toJson: _breakSlotsToJson,
     )
-    List<DateTime> breakSlots,
+    List<BreakSlotModel> breakSlots,
     @JsonKey(name: 'order_cutoff_minutes') int orderCutoffMinutes,
   });
 }
@@ -78,7 +78,7 @@ class _$SettingsModelCopyWithImpl<$Res, $Val extends SettingsModel>
             breakSlots: null == breakSlots
                 ? _value.breakSlots
                 : breakSlots // ignore: cast_nullable_to_non_nullable
-                      as List<DateTime>,
+                      as List<BreakSlotModel>,
             orderCutoffMinutes: null == orderCutoffMinutes
                 ? _value.orderCutoffMinutes
                 : orderCutoffMinutes // ignore: cast_nullable_to_non_nullable
@@ -101,10 +101,10 @@ abstract class _$$SettingsModelImplCopyWith<$Res>
   $Res call({
     @JsonKey(
       name: 'break_slots',
-      fromJson: _timestampListToDateTime,
-      toJson: _dateTimeListToTimestamp,
+      fromJson: _breakSlotsFromJson,
+      toJson: _breakSlotsToJson,
     )
-    List<DateTime> breakSlots,
+    List<BreakSlotModel> breakSlots,
     @JsonKey(name: 'order_cutoff_minutes') int orderCutoffMinutes,
   });
 }
@@ -128,7 +128,7 @@ class __$$SettingsModelImplCopyWithImpl<$Res>
         breakSlots: null == breakSlots
             ? _value._breakSlots
             : breakSlots // ignore: cast_nullable_to_non_nullable
-                  as List<DateTime>,
+                  as List<BreakSlotModel>,
         orderCutoffMinutes: null == orderCutoffMinutes
             ? _value.orderCutoffMinutes
             : orderCutoffMinutes // ignore: cast_nullable_to_non_nullable
@@ -144,10 +144,10 @@ class _$SettingsModelImpl extends _SettingsModel {
   const _$SettingsModelImpl({
     @JsonKey(
       name: 'break_slots',
-      fromJson: _timestampListToDateTime,
-      toJson: _dateTimeListToTimestamp,
+      fromJson: _breakSlotsFromJson,
+      toJson: _breakSlotsToJson,
     )
-    required final List<DateTime> breakSlots,
+    required final List<BreakSlotModel> breakSlots,
     @JsonKey(name: 'order_cutoff_minutes') required this.orderCutoffMinutes,
   }) : _breakSlots = breakSlots,
        super._();
@@ -155,14 +155,14 @@ class _$SettingsModelImpl extends _SettingsModel {
   factory _$SettingsModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$SettingsModelImplFromJson(json);
 
-  final List<DateTime> _breakSlots;
+  final List<BreakSlotModel> _breakSlots;
   @override
   @JsonKey(
     name: 'break_slots',
-    fromJson: _timestampListToDateTime,
-    toJson: _dateTimeListToTimestamp,
+    fromJson: _breakSlotsFromJson,
+    toJson: _breakSlotsToJson,
   )
-  List<DateTime> get breakSlots {
+  List<BreakSlotModel> get breakSlots {
     if (_breakSlots is EqualUnmodifiableListView) return _breakSlots;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_breakSlots);
@@ -216,10 +216,10 @@ abstract class _SettingsModel extends SettingsModel {
   const factory _SettingsModel({
     @JsonKey(
       name: 'break_slots',
-      fromJson: _timestampListToDateTime,
-      toJson: _dateTimeListToTimestamp,
+      fromJson: _breakSlotsFromJson,
+      toJson: _breakSlotsToJson,
     )
-    required final List<DateTime> breakSlots,
+    required final List<BreakSlotModel> breakSlots,
     @JsonKey(name: 'order_cutoff_minutes')
     required final int orderCutoffMinutes,
   }) = _$SettingsModelImpl;
@@ -231,10 +231,10 @@ abstract class _SettingsModel extends SettingsModel {
   @override
   @JsonKey(
     name: 'break_slots',
-    fromJson: _timestampListToDateTime,
-    toJson: _dateTimeListToTimestamp,
+    fromJson: _breakSlotsFromJson,
+    toJson: _breakSlotsToJson,
   )
-  List<DateTime> get breakSlots;
+  List<BreakSlotModel> get breakSlots;
   @override
   @JsonKey(name: 'order_cutoff_minutes')
   int get orderCutoffMinutes;

@@ -31,31 +31,7 @@ class RecentOrderCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image
-            Container(
-              height: 80,
-              decoration: BoxDecoration(
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(12)),
-                color: AppColors.borderColor,
-                image: firstItem?.imageUrl != null
-                    ? DecorationImage(
-                        image: NetworkImage(firstItem!.imageUrl!),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
-              ),
-              child: firstItem?.imageUrl == null
-                  ? const Center(
-                      child: Icon(
-                        Icons.restaurant,
-                        color: AppColors.textSecondary,
-                        size: 32,
-                      ),
-                    )
-                  : null,
-            ),
-
+            
             // Content
             Padding(
               padding: const EdgeInsets.all(8.0),

@@ -17,7 +17,7 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$SettingsEntity {
-  List<DateTime> get breakSlots => throw _privateConstructorUsedError;
+  List<BreakSlotEntity> get breakSlots => throw _privateConstructorUsedError;
   int get orderCutoffMinutes => throw _privateConstructorUsedError;
 
   /// Create a copy of SettingsEntity
@@ -34,7 +34,7 @@ abstract class $SettingsEntityCopyWith<$Res> {
     $Res Function(SettingsEntity) then,
   ) = _$SettingsEntityCopyWithImpl<$Res, SettingsEntity>;
   @useResult
-  $Res call({List<DateTime> breakSlots, int orderCutoffMinutes});
+  $Res call({List<BreakSlotEntity> breakSlots, int orderCutoffMinutes});
 }
 
 /// @nodoc
@@ -57,7 +57,7 @@ class _$SettingsEntityCopyWithImpl<$Res, $Val extends SettingsEntity>
             breakSlots: null == breakSlots
                 ? _value.breakSlots
                 : breakSlots // ignore: cast_nullable_to_non_nullable
-                      as List<DateTime>,
+                      as List<BreakSlotEntity>,
             orderCutoffMinutes: null == orderCutoffMinutes
                 ? _value.orderCutoffMinutes
                 : orderCutoffMinutes // ignore: cast_nullable_to_non_nullable
@@ -77,7 +77,7 @@ abstract class _$$SettingsEntityImplCopyWith<$Res>
   ) = __$$SettingsEntityImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({List<DateTime> breakSlots, int orderCutoffMinutes});
+  $Res call({List<BreakSlotEntity> breakSlots, int orderCutoffMinutes});
 }
 
 /// @nodoc
@@ -99,7 +99,7 @@ class __$$SettingsEntityImplCopyWithImpl<$Res>
         breakSlots: null == breakSlots
             ? _value._breakSlots
             : breakSlots // ignore: cast_nullable_to_non_nullable
-                  as List<DateTime>,
+                  as List<BreakSlotEntity>,
         orderCutoffMinutes: null == orderCutoffMinutes
             ? _value.orderCutoffMinutes
             : orderCutoffMinutes // ignore: cast_nullable_to_non_nullable
@@ -113,13 +113,13 @@ class __$$SettingsEntityImplCopyWithImpl<$Res>
 
 class _$SettingsEntityImpl implements _SettingsEntity {
   const _$SettingsEntityImpl({
-    required final List<DateTime> breakSlots,
+    required final List<BreakSlotEntity> breakSlots,
     required this.orderCutoffMinutes,
   }) : _breakSlots = breakSlots;
 
-  final List<DateTime> _breakSlots;
+  final List<BreakSlotEntity> _breakSlots;
   @override
-  List<DateTime> get breakSlots {
+  List<BreakSlotEntity> get breakSlots {
     if (_breakSlots is EqualUnmodifiableListView) return _breakSlots;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_breakSlots);
@@ -167,12 +167,12 @@ class _$SettingsEntityImpl implements _SettingsEntity {
 
 abstract class _SettingsEntity implements SettingsEntity {
   const factory _SettingsEntity({
-    required final List<DateTime> breakSlots,
+    required final List<BreakSlotEntity> breakSlots,
     required final int orderCutoffMinutes,
   }) = _$SettingsEntityImpl;
 
   @override
-  List<DateTime> get breakSlots;
+  List<BreakSlotEntity> get breakSlots;
   @override
   int get orderCutoffMinutes;
 

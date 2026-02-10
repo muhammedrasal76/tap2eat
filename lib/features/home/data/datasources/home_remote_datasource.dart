@@ -25,12 +25,47 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
           .where(FirebaseConstants.canteenIsActive, isEqualTo: true)
           .get();
 
-      return querySnapshot.docs.map((doc) {
+      print('🔍 DEBUG: Found ${querySnapshot.docs.length} canteens');
+
+      // Fetch canteens with menu items from subcollection
+      final canteens = <CanteenModel>[];
+
+      for (final doc in querySnapshot.docs) {
         final data = doc.data();
         data['id'] = doc.id;
-        return CanteenModel.fromJson(data);
-      }).toList();
+
+        print('🔍 DEBUG: Canteen ${doc.id}:');
+        print('  - Name: ${data['name']}');
+
+        // Fetch menu items from subcollection
+        final menuItemsSnapshot = await firestore
+            .collection(FirebaseConstants.canteensCollection)
+            .doc(doc.id)
+            .collection('menu_items')
+            .get();
+
+        print('  - Menu items in subcollection: ${menuItemsSnapshot.docs.length}');
+
+        // Convert menu items subcollection to array format
+        final menuItems = menuItemsSnapshot.docs.map((itemDoc) {
+          final itemData = itemDoc.data();
+          itemData['id'] = itemDoc.id; // Use document ID as item ID
+          return itemData;
+        }).toList();
+
+        // Add menu_items array to canteen data
+        data['menu_items'] = menuItems;
+
+        if (menuItems.isNotEmpty) {
+          print('  - First item: ${menuItems[0]}');
+        }
+
+        canteens.add(CanteenModel.fromJson(data));
+      }
+
+      return canteens;
     } catch (e) {
+      print('❌ ERROR fetching canteens: $e');
       throw Exception('Failed to fetch canteens: $e');
     }
   }
@@ -74,8 +109,8 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   Future<SettingsModel> getSettings() async {
     try {
       final doc = await firestore
-          .collection('global')
-          .doc(FirebaseConstants.settingsDocument)
+          .collection(FirebaseConstants.settingsDocument)
+          .doc('global')
           .get();
 
       if (!doc.exists) {

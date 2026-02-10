@@ -48,4 +48,12 @@ class FirebaseConstants {
   static const String menuItemCategory = 'category';
   static const String menuItemImageUrl = 'image_url';
   static const String menuItemIsAvailable = 'is_available';
+  static const String menuItemStock = 'stock';
+
+  // Subcollections
+  static const String menuItemsSubcollection = 'menu_items';
+
+  // Additional collections
+  static const String auditLogsCollection = 'audit_logs';
+  static const String earningsCollection = 'earnings';
 }

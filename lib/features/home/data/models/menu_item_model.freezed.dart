@@ -27,9 +27,10 @@ mixin _$MenuItemModel {
   double get price => throw _privateConstructorUsedError;
   String get category => throw _privateConstructorUsedError;
   @JsonKey(name: 'image_url')
-  String get imageUrl => throw _privateConstructorUsedError;
+  String? get imageUrl => throw _privateConstructorUsedError;
   @JsonKey(name: 'is_available')
   bool get isAvailable => throw _privateConstructorUsedError;
+  int get stock => throw _privateConstructorUsedError;
 
   /// Serializes this MenuItemModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -54,8 +55,9 @@ abstract class $MenuItemModelCopyWith<$Res> {
     String description,
     double price,
     String category,
-    @JsonKey(name: 'image_url') String imageUrl,
+    @JsonKey(name: 'image_url') String? imageUrl,
     @JsonKey(name: 'is_available') bool isAvailable,
+    int stock,
   });
 }
 
@@ -79,8 +81,9 @@ class _$MenuItemModelCopyWithImpl<$Res, $Val extends MenuItemModel>
     Object? description = null,
     Object? price = null,
     Object? category = null,
-    Object? imageUrl = null,
+    Object? imageUrl = freezed,
     Object? isAvailable = null,
+    Object? stock = null,
   }) {
     return _then(
       _value.copyWith(
@@ -104,14 +107,18 @@ class _$MenuItemModelCopyWithImpl<$Res, $Val extends MenuItemModel>
                 ? _value.category
                 : category // ignore: cast_nullable_to_non_nullable
                       as String,
-            imageUrl: null == imageUrl
+            imageUrl: freezed == imageUrl
                 ? _value.imageUrl
                 : imageUrl // ignore: cast_nullable_to_non_nullable
-                      as String,
+                      as String?,
             isAvailable: null == isAvailable
                 ? _value.isAvailable
                 : isAvailable // ignore: cast_nullable_to_non_nullable
                       as bool,
+            stock: null == stock
+                ? _value.stock
+                : stock // ignore: cast_nullable_to_non_nullable
+                      as int,
           )
           as $Val,
     );
@@ -133,8 +140,9 @@ abstract class _$$MenuItemModelImplCopyWith<$Res>
     String description,
     double price,
     String category,
-    @JsonKey(name: 'image_url') String imageUrl,
+    @JsonKey(name: 'image_url') String? imageUrl,
     @JsonKey(name: 'is_available') bool isAvailable,
+    int stock,
   });
 }
 
@@ -157,8 +165,9 @@ class __$$MenuItemModelImplCopyWithImpl<$Res>
     Object? description = null,
     Object? price = null,
     Object? category = null,
-    Object? imageUrl = null,
+    Object? imageUrl = freezed,
     Object? isAvailable = null,
+    Object? stock = null,
   }) {
     return _then(
       _$MenuItemModelImpl(
@@ -182,14 +191,18 @@ class __$$MenuItemModelImplCopyWithImpl<$Res>
             ? _value.category
             : category // ignore: cast_nullable_to_non_nullable
                   as String,
-        imageUrl: null == imageUrl
+        imageUrl: freezed == imageUrl
             ? _value.imageUrl
             : imageUrl // ignore: cast_nullable_to_non_nullable
-                  as String,
+                  as String?,
         isAvailable: null == isAvailable
             ? _value.isAvailable
             : isAvailable // ignore: cast_nullable_to_non_nullable
                   as bool,
+        stock: null == stock
+            ? _value.stock
+            : stock // ignore: cast_nullable_to_non_nullable
+                  as int,
       ),
     );
   }
@@ -199,23 +212,26 @@ class __$$MenuItemModelImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$MenuItemModelImpl extends _MenuItemModel {
   const _$MenuItemModelImpl({
-    required this.id,
+    this.id = '',
     required this.name,
-    required this.description,
+    this.description = '',
     required this.price,
     required this.category,
-    @JsonKey(name: 'image_url') required this.imageUrl,
-    @JsonKey(name: 'is_available') required this.isAvailable,
+    @JsonKey(name: 'image_url') this.imageUrl,
+    @JsonKey(name: 'is_available') this.isAvailable = true,
+    this.stock = 50,
   }) : super._();
 
   factory _$MenuItemModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$MenuItemModelImplFromJson(json);
 
   @override
+  @JsonKey()
   final String id;
   @override
   final String name;
   @override
+  @JsonKey()
   final String description;
   @override
   final double price;
@@ -223,14 +239,17 @@ class _$MenuItemModelImpl extends _MenuItemModel {
   final String category;
   @override
   @JsonKey(name: 'image_url')
-  final String imageUrl;
+  final String? imageUrl;
   @override
   @JsonKey(name: 'is_available')
   final bool isAvailable;
+  @override
+  @JsonKey()
+  final int stock;
 
   @override
   String toString() {
-    return 'MenuItemModel(id: $id, name: $name, description: $description, price: $price, category: $category, imageUrl: $imageUrl, isAvailable: $isAvailable)';
+    return 'MenuItemModel(id: $id, name: $name, description: $description, price: $price, category: $category, imageUrl: $imageUrl, isAvailable: $isAvailable, stock: $stock)';
   }
 
   @override
@@ -248,7 +267,8 @@ class _$MenuItemModelImpl extends _MenuItemModel {
             (identical(other.imageUrl, imageUrl) ||
                 other.imageUrl == imageUrl) &&
             (identical(other.isAvailable, isAvailable) ||
-                other.isAvailable == isAvailable));
+                other.isAvailable == isAvailable) &&
+            (identical(other.stock, stock) || other.stock == stock));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -262,6 +282,7 @@ class _$MenuItemModelImpl extends _MenuItemModel {
     category,
     imageUrl,
     isAvailable,
+    stock,
   );
 
   /// Create a copy of MenuItemModel
@@ -280,13 +301,14 @@ class _$MenuItemModelImpl extends _MenuItemModel {
 
 abstract class _MenuItemModel extends MenuItemModel {
   const factory _MenuItemModel({
-    required final String id,
+    final String id,
     required final String name,
-    required final String description,
+    final String description,
     required final double price,
     required final String category,
-    @JsonKey(name: 'image_url') required final String imageUrl,
-    @JsonKey(name: 'is_available') required final bool isAvailable,
+    @JsonKey(name: 'image_url') final String? imageUrl,
+    @JsonKey(name: 'is_available') final bool isAvailable,
+    final int stock,
   }) = _$MenuItemModelImpl;
   const _MenuItemModel._() : super._();
 
@@ -305,10 +327,12 @@ abstract class _MenuItemModel extends MenuItemModel {
   String get category;
   @override
   @JsonKey(name: 'image_url')
-  String get imageUrl;
+  String? get imageUrl;
   @override
   @JsonKey(name: 'is_available')
   bool get isAvailable;
+  @override
+  int get stock;
 
   /// Create a copy of MenuItemModel
   /// with the given fields replaced by the non-null parameter values.

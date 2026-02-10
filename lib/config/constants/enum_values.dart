@@ -2,6 +2,8 @@
 enum UserRole {
   student,
   teacher,
+  masterAdmin,
+  canteenAdmin,
   deliveryStudent,
 }
 
@@ -31,6 +33,10 @@ extension UserRoleExtension on UserRole {
         return 'Student';
       case UserRole.teacher:
         return 'Teacher';
+      case UserRole.masterAdmin:
+        return 'Master Admin';
+      case UserRole.canteenAdmin:
+        return 'Canteen Admin';
       case UserRole.deliveryStudent:
         return 'Delivery Student';
     }
@@ -42,6 +48,10 @@ extension UserRoleExtension on UserRole {
         return 'student';
       case UserRole.teacher:
         return 'teacher';
+      case UserRole.masterAdmin:
+        return 'master_admin';
+      case UserRole.canteenAdmin:
+        return 'canteen_admin';
       case UserRole.deliveryStudent:
         return 'delivery_student';
     }
@@ -53,6 +63,10 @@ extension UserRoleExtension on UserRole {
         return UserRole.student;
       case 'teacher':
         return UserRole.teacher;
+      case 'master_admin':
+        return UserRole.masterAdmin;
+      case 'canteen_admin':
+        return UserRole.canteenAdmin;
       case 'delivery_student':
         return UserRole.deliveryStudent;
       default:

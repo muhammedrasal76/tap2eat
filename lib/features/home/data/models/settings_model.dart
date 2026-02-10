@@ -1,19 +1,19 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../domain/entities/settings_entity.dart';
+import 'break_slot_model.dart';
 
 part 'settings_model.freezed.dart';
 part 'settings_model.g.dart';
 
-// Converter functions for Timestamp List <-> DateTime List
-List<DateTime> _timestampListToDateTime(List<dynamic> timestamps) {
-  return timestamps
-      .map((ts) => ts is Timestamp ? ts.toDate() : DateTime.now())
+List<BreakSlotModel> _breakSlotsFromJson(List<dynamic> json) {
+  return json
+      .map((item) =>
+          BreakSlotModel.fromJson(Map<String, dynamic>.from(item as Map)))
       .toList();
 }
 
-List<Timestamp> _dateTimeListToTimestamp(List<DateTime> dateTimes) {
-  return dateTimes.map((dt) => Timestamp.fromDate(dt)).toList();
+List<Map<String, dynamic>> _breakSlotsToJson(List<BreakSlotModel> slots) {
+  return slots.map((slot) => slot.toJson()).toList();
 }
 
 @freezed
@@ -23,10 +23,10 @@ class SettingsModel with _$SettingsModel {
   const factory SettingsModel({
     @JsonKey(
       name: 'break_slots',
-      fromJson: _timestampListToDateTime,
-      toJson: _dateTimeListToTimestamp,
+      fromJson: _breakSlotsFromJson,
+      toJson: _breakSlotsToJson,
     )
-    required List<DateTime> breakSlots,
+    required List<BreakSlotModel> breakSlots,
     @JsonKey(name: 'order_cutoff_minutes') required int orderCutoffMinutes,
   }) = _SettingsModel;
 
@@ -36,7 +36,7 @@ class SettingsModel with _$SettingsModel {
   /// Convert to domain entity
   SettingsEntity toEntity() {
     return SettingsEntity(
-      breakSlots: breakSlots,
+      breakSlots: breakSlots.map((slot) => slot.toEntity()).toList(),
       orderCutoffMinutes: orderCutoffMinutes,
     );
   }

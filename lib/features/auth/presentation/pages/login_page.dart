@@ -55,15 +55,13 @@ class _LoginPageState extends State<LoginPage> {
     switch (role) {
       case UserRole.student:
         context.go(RouteNames.studentHome);
-        break;
       case UserRole.teacher:
         context.go(RouteNames.teacherHome);
-        break;
       case UserRole.deliveryStudent:
         context.go(RouteNames.deliveryStudentHome);
-        break;
-      default:
-        // Fallback to login if role not recognized
+      case UserRole.masterAdmin:
+      case UserRole.canteenAdmin:
+        // Admin roles shouldn't use mobile app - sign out and show message
         context.go(RouteNames.login);
     }
   }

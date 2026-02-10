@@ -1,0 +1,235 @@
+import 'package:flutter/foundation.dart';
+import '../../../../config/constants/enum_values.dart';
+import '../../../../core/utils/time_lock_helper.dart';
+import '../../../home/domain/entities/break_slot_entity.dart';
+import '../../../home/domain/entities/recent_order_entity.dart';
+import '../../../home/domain/entities/settings_entity.dart';
+import '../../../menu/presentation/providers/cart_provider.dart';
+import '../../domain/usecases/create_order_usecase.dart';
+import '../../domain/usecases/get_order_detail_usecase.dart';
+import '../../domain/usecases/get_order_history_usecase.dart';
+
+/// Order state management provider
+class OrderProvider with ChangeNotifier {
+  final CreateOrderUseCase createOrderUseCase;
+  final GetOrderHistoryUseCase getOrderHistoryUseCase;
+  final GetOrderDetailUseCase getOrderDetailUseCase;
+
+  OrderProvider({
+    required this.createOrderUseCase,
+    required this.getOrderHistoryUseCase,
+    required this.getOrderDetailUseCase,
+  });
+
+  // Checkout state
+  FulfillmentType _fulfillmentType = FulfillmentType.pickup;
+  BreakSlotEntity? _selectedBreakSlot;
+  DateTime? _fulfillmentSlot;
+  bool _isPlacingOrder = false;
+  String? _lastCreatedOrderId;
+  String? _checkoutError;
+
+  // Order history state
+  List<RecentOrderEntity> _orders = [];
+  bool _isLoadingHistory = false;
+  String? _historyError;
+
+  // Order detail state
+  RecentOrderEntity? _orderDetail;
+  bool _isLoadingDetail = false;
+  String? _detailError;
+
+  // Checkout getters
+  FulfillmentType get fulfillmentType => _fulfillmentType;
+  BreakSlotEntity? get selectedBreakSlot => _selectedBreakSlot;
+  DateTime? get fulfillmentSlot => _fulfillmentSlot;
+  bool get isPlacingOrder => _isPlacingOrder;
+  String? get lastCreatedOrderId => _lastCreatedOrderId;
+  String? get checkoutError => _checkoutError;
+
+  double get deliveryFee =>
+      _fulfillmentType == FulfillmentType.delivery ? 10.0 : 0.0;
+
+  // Order history getters
+  List<RecentOrderEntity> get orders => _orders;
+  bool get isLoadingHistory => _isLoadingHistory;
+  String? get historyError => _historyError;
+
+  // Order detail getters
+  RecentOrderEntity? get orderDetail => _orderDetail;
+  bool get isLoadingDetail => _isLoadingDetail;
+  String? get detailError => _detailError;
+
+  /// Set the fulfillment type (pickup or delivery)
+  void setFulfillmentType(FulfillmentType type) {
+    _fulfillmentType = type;
+    if (type == FulfillmentType.pickup) {
+      _selectedBreakSlot = null;
+      _fulfillmentSlot = null;
+    }
+    notifyListeners();
+  }
+
+  /// Select a break slot for delivery
+  void selectBreakSlot(BreakSlotEntity slot) {
+    _selectedBreakSlot = slot;
+    // Use the slot's start time as the fulfillment slot
+    final now = DateTime.now();
+    _fulfillmentSlot = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      slot.startTime.hour,
+      slot.startTime.minute,
+    );
+    notifyListeners();
+  }
+
+  /// Get available break slots filtered by active, today's day, and past cutoff
+  List<BreakSlotEntity> getAvailableBreakSlots(SettingsEntity? settings) {
+    if (settings == null) return [];
+
+    final now = DateTime.now();
+    final currentDayOfWeek = now.weekday;
+
+    return settings.breakSlots.where((slot) {
+      if (!slot.isActive) return false;
+      if (slot.dayOfWeek != currentDayOfWeek) return false;
+
+      // Check if the slot hasn't passed cutoff
+      final slotStart = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        slot.startTime.hour,
+        slot.startTime.minute,
+      );
+
+      return TimeLockHelper.canPlaceOrderForSlot(
+        slotStart,
+        now,
+        cutoffMinutes: settings.orderCutoffMinutes,
+      );
+    }).toList();
+  }
+
+  /// Validate order before placing
+  String? validateOrder(CartProvider cart, SettingsEntity? settings) {
+    if (cart.isEmpty) return 'Cart is empty';
+
+    if (_fulfillmentType == FulfillmentType.delivery) {
+      if (_selectedBreakSlot == null) {
+        return 'Please select a delivery time slot';
+      }
+      if (_fulfillmentSlot == null) {
+        return 'Invalid delivery time slot';
+      }
+    }
+
+    return null;
+  }
+
+  /// Place an order
+  Future<bool> placeOrder(CartProvider cart, String userId) async {
+    _isPlacingOrder = true;
+    _checkoutError = null;
+    notifyListeners();
+
+    try {
+      final canteen = cart.currentCanteen;
+      if (canteen == null) {
+        _checkoutError = 'No canteen selected';
+        _isPlacingOrder = false;
+        notifyListeners();
+        return false;
+      }
+
+      // For pickup, use a default fulfillment slot (now + 30 min)
+      final slot = _fulfillmentSlot ??
+          DateTime.now().add(const Duration(minutes: 30));
+
+      final items = cart.cartItems
+          .map((cartItem) => OrderItemEntity(
+                menuItemId: cartItem.menuItem.id,
+                name: cartItem.menuItem.name,
+                quantity: cartItem.quantity,
+                price: cartItem.menuItem.price,
+              ))
+          .toList();
+
+      final orderId = await createOrderUseCase(CreateOrderParams(
+        canteenId: canteen.id,
+        canteenName: canteen.name,
+        userId: userId,
+        items: items,
+        totalAmount: cart.subtotal + deliveryFee,
+        fulfillmentSlot: slot,
+        fulfillmentType: _fulfillmentType.value,
+        deliveryFee: deliveryFee,
+      ));
+
+      _lastCreatedOrderId = orderId;
+      _isPlacingOrder = false;
+
+      // Clear cart after successful order
+      cart.clearCart();
+
+      // Reset checkout state
+      _fulfillmentType = FulfillmentType.pickup;
+      _selectedBreakSlot = null;
+      _fulfillmentSlot = null;
+
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _checkoutError = 'Failed to place order. Please try again.';
+      _isPlacingOrder = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Fetch order history for a user
+  Future<void> fetchOrderHistory(String userId) async {
+    _isLoadingHistory = true;
+    _historyError = null;
+    notifyListeners();
+
+    try {
+      _orders = await getOrderHistoryUseCase(
+        GetOrderHistoryParams(userId: userId),
+      );
+      _isLoadingHistory = false;
+      notifyListeners();
+    } catch (e) {
+      _isLoadingHistory = false;
+      _historyError = 'Failed to load orders';
+      notifyListeners();
+    }
+  }
+
+  /// Fetch a single order detail
+  Future<void> fetchOrderDetail(String orderId) async {
+    _isLoadingDetail = true;
+    _detailError = null;
+    notifyListeners();
+
+    try {
+      _orderDetail = await getOrderDetailUseCase(
+        GetOrderDetailParams(orderId: orderId),
+      );
+      _isLoadingDetail = false;
+      notifyListeners();
+    } catch (e) {
+      _isLoadingDetail = false;
+      _detailError = 'Failed to load order details';
+      notifyListeners();
+    }
+  }
+
+  /// Clear checkout error
+  void clearCheckoutError() {
+    _checkoutError = null;
+    notifyListeners();
+  }
+}

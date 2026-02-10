@@ -22,8 +22,9 @@ mixin _$MenuItemEntity {
   String get description => throw _privateConstructorUsedError;
   double get price => throw _privateConstructorUsedError;
   String get category => throw _privateConstructorUsedError;
-  String get imageUrl => throw _privateConstructorUsedError;
+  String? get imageUrl => throw _privateConstructorUsedError;
   bool get isAvailable => throw _privateConstructorUsedError;
+  int get stock => throw _privateConstructorUsedError;
 
   /// Create a copy of MenuItemEntity
   /// with the given fields replaced by the non-null parameter values.
@@ -45,8 +46,9 @@ abstract class $MenuItemEntityCopyWith<$Res> {
     String description,
     double price,
     String category,
-    String imageUrl,
+    String? imageUrl,
     bool isAvailable,
+    int stock,
   });
 }
 
@@ -70,8 +72,9 @@ class _$MenuItemEntityCopyWithImpl<$Res, $Val extends MenuItemEntity>
     Object? description = null,
     Object? price = null,
     Object? category = null,
-    Object? imageUrl = null,
+    Object? imageUrl = freezed,
     Object? isAvailable = null,
+    Object? stock = null,
   }) {
     return _then(
       _value.copyWith(
@@ -95,14 +98,18 @@ class _$MenuItemEntityCopyWithImpl<$Res, $Val extends MenuItemEntity>
                 ? _value.category
                 : category // ignore: cast_nullable_to_non_nullable
                       as String,
-            imageUrl: null == imageUrl
+            imageUrl: freezed == imageUrl
                 ? _value.imageUrl
                 : imageUrl // ignore: cast_nullable_to_non_nullable
-                      as String,
+                      as String?,
             isAvailable: null == isAvailable
                 ? _value.isAvailable
                 : isAvailable // ignore: cast_nullable_to_non_nullable
                       as bool,
+            stock: null == stock
+                ? _value.stock
+                : stock // ignore: cast_nullable_to_non_nullable
+                      as int,
           )
           as $Val,
     );
@@ -124,8 +131,9 @@ abstract class _$$MenuItemEntityImplCopyWith<$Res>
     String description,
     double price,
     String category,
-    String imageUrl,
+    String? imageUrl,
     bool isAvailable,
+    int stock,
   });
 }
 
@@ -148,8 +156,9 @@ class __$$MenuItemEntityImplCopyWithImpl<$Res>
     Object? description = null,
     Object? price = null,
     Object? category = null,
-    Object? imageUrl = null,
+    Object? imageUrl = freezed,
     Object? isAvailable = null,
+    Object? stock = null,
   }) {
     return _then(
       _$MenuItemEntityImpl(
@@ -173,14 +182,18 @@ class __$$MenuItemEntityImplCopyWithImpl<$Res>
             ? _value.category
             : category // ignore: cast_nullable_to_non_nullable
                   as String,
-        imageUrl: null == imageUrl
+        imageUrl: freezed == imageUrl
             ? _value.imageUrl
             : imageUrl // ignore: cast_nullable_to_non_nullable
-                  as String,
+                  as String?,
         isAvailable: null == isAvailable
             ? _value.isAvailable
             : isAvailable // ignore: cast_nullable_to_non_nullable
                   as bool,
+        stock: null == stock
+            ? _value.stock
+            : stock // ignore: cast_nullable_to_non_nullable
+                  as int,
       ),
     );
   }
@@ -190,16 +203,18 @@ class __$$MenuItemEntityImplCopyWithImpl<$Res>
 
 class _$MenuItemEntityImpl implements _MenuItemEntity {
   const _$MenuItemEntityImpl({
-    required this.id,
+    this.id = '',
     required this.name,
     required this.description,
     required this.price,
     required this.category,
-    required this.imageUrl,
+    this.imageUrl,
     required this.isAvailable,
+    required this.stock,
   });
 
   @override
+  @JsonKey()
   final String id;
   @override
   final String name;
@@ -210,13 +225,15 @@ class _$MenuItemEntityImpl implements _MenuItemEntity {
   @override
   final String category;
   @override
-  final String imageUrl;
+  final String? imageUrl;
   @override
   final bool isAvailable;
+  @override
+  final int stock;
 
   @override
   String toString() {
-    return 'MenuItemEntity(id: $id, name: $name, description: $description, price: $price, category: $category, imageUrl: $imageUrl, isAvailable: $isAvailable)';
+    return 'MenuItemEntity(id: $id, name: $name, description: $description, price: $price, category: $category, imageUrl: $imageUrl, isAvailable: $isAvailable, stock: $stock)';
   }
 
   @override
@@ -234,7 +251,8 @@ class _$MenuItemEntityImpl implements _MenuItemEntity {
             (identical(other.imageUrl, imageUrl) ||
                 other.imageUrl == imageUrl) &&
             (identical(other.isAvailable, isAvailable) ||
-                other.isAvailable == isAvailable));
+                other.isAvailable == isAvailable) &&
+            (identical(other.stock, stock) || other.stock == stock));
   }
 
   @override
@@ -247,6 +265,7 @@ class _$MenuItemEntityImpl implements _MenuItemEntity {
     category,
     imageUrl,
     isAvailable,
+    stock,
   );
 
   /// Create a copy of MenuItemEntity
@@ -263,13 +282,14 @@ class _$MenuItemEntityImpl implements _MenuItemEntity {
 
 abstract class _MenuItemEntity implements MenuItemEntity {
   const factory _MenuItemEntity({
-    required final String id,
+    final String id,
     required final String name,
     required final String description,
     required final double price,
     required final String category,
-    required final String imageUrl,
+    final String? imageUrl,
     required final bool isAvailable,
+    required final int stock,
   }) = _$MenuItemEntityImpl;
 
   @override
@@ -283,9 +303,11 @@ abstract class _MenuItemEntity implements MenuItemEntity {
   @override
   String get category;
   @override
-  String get imageUrl;
+  String? get imageUrl;
   @override
   bool get isAvailable;
+  @override
+  int get stock;
 
   /// Create a copy of MenuItemEntity
   /// with the given fields replaced by the non-null parameter values.

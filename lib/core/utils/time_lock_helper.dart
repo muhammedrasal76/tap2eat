@@ -1,22 +1,41 @@
+import '../../features/home/domain/entities/break_slot_entity.dart';
+
 /// Helper class for break time validation logic (Time Lock Policy)
 /// Used by delivery students to determine when they can go online
 class TimeLockHelper {
   TimeLockHelper._();
 
-  /// Check if the current time is within any of the break time slots
+  /// Check if the current time is within any of the active break time slots
   /// This implements FR 4.2.1: Time Lock Enforcement
   static bool isWithinBreakTime(
     DateTime currentTime,
-    List<DateTime> breakSlots,
+    List<BreakSlotEntity> breakSlots,
   ) {
     if (breakSlots.isEmpty) return false;
 
-    for (final breakSlot in breakSlots) {
-      // Assuming each break slot is 1 hour long (can be configured)
-      final breakStart = breakSlot;
-      final breakEnd = breakSlot.add(const Duration(hours: 1));
+    final currentDayOfWeek = currentTime.weekday; // 1=Mon, 7=Sun
 
-      if (currentTime.isAfter(breakStart) && currentTime.isBefore(breakEnd)) {
+    for (final slot in breakSlots) {
+      if (!slot.isActive) continue;
+      if (slot.dayOfWeek != currentDayOfWeek) continue;
+
+      // Apply slot's hour:minute to current date
+      final breakStart = DateTime(
+        currentTime.year,
+        currentTime.month,
+        currentTime.day,
+        slot.startTime.hour,
+        slot.startTime.minute,
+      );
+      final breakEnd = DateTime(
+        currentTime.year,
+        currentTime.month,
+        currentTime.day,
+        slot.endTime.hour,
+        slot.endTime.minute,
+      );
+
+      if (!currentTime.isBefore(breakStart) && currentTime.isBefore(breakEnd)) {
         return true;
       }
     }
@@ -27,42 +46,56 @@ class TimeLockHelper {
   /// Get the next available break time
   static DateTime? getNextBreakTime(
     DateTime currentTime,
-    List<DateTime> breakSlots,
+    List<BreakSlotEntity> breakSlots,
   ) {
     if (breakSlots.isEmpty) return null;
 
-    // Sort break slots by time
-    final sortedSlots = List<DateTime>.from(breakSlots)
-      ..sort((a, b) => a.compareTo(b));
+    final currentDayOfWeek = currentTime.weekday;
 
-    // Find the next break slot after current time
-    for (final slot in sortedSlots) {
-      if (slot.isAfter(currentTime)) {
-        return slot;
+    final upcomingStarts = <DateTime>[];
+
+    for (final slot in breakSlots) {
+      if (!slot.isActive) continue;
+
+      // Calculate days ahead (0 = today, 1..6 = future days)
+      int daysAhead = (slot.dayOfWeek - currentDayOfWeek) % 7;
+
+      final candidateDate = currentTime.add(Duration(days: daysAhead));
+      final breakStart = DateTime(
+        candidateDate.year,
+        candidateDate.month,
+        candidateDate.day,
+        slot.startTime.hour,
+        slot.startTime.minute,
+      );
+
+      if (breakStart.isAfter(currentTime)) {
+        upcomingStarts.add(breakStart);
+      } else if (daysAhead == 0) {
+        // Same day but already passed — push to next week
+        final nextWeek = currentTime.add(const Duration(days: 7));
+        upcomingStarts.add(DateTime(
+          nextWeek.year,
+          nextWeek.month,
+          nextWeek.day,
+          slot.startTime.hour,
+          slot.startTime.minute,
+        ));
       }
     }
 
-    // If no future slots found, return null (or could return first slot of next day)
-    return null;
+    if (upcomingStarts.isEmpty) return null;
+    upcomingStarts.sort((a, b) => a.compareTo(b));
+    return upcomingStarts.first;
   }
 
   /// Check if a time slot is valid for delivery orders (must be a break time)
   /// This implements FR 4.1.3: Policy Check (Delivery)
   static bool isValidDeliverySlot(
     DateTime fulfillmentSlot,
-    List<DateTime> breakSlots,
+    List<BreakSlotEntity> breakSlots,
   ) {
-    for (final breakSlot in breakSlots) {
-      // Check if the fulfillment slot matches any break slot (within same hour)
-      if (fulfillmentSlot.year == breakSlot.year &&
-          fulfillmentSlot.month == breakSlot.month &&
-          fulfillmentSlot.day == breakSlot.day &&
-          fulfillmentSlot.hour == breakSlot.hour) {
-        return true;
-      }
-    }
-
-    return false;
+    return isWithinBreakTime(fulfillmentSlot, breakSlots);
   }
 
   /// Check if an order can be placed for the given time slot

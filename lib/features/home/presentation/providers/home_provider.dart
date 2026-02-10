@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../../../../config/constants/enum_values.dart';
 import '../../../../core/usecase/usecase.dart';
 import '../../../../core/utils/time_lock_helper.dart';
+import '../../domain/entities/break_slot_entity.dart';
 import '../../domain/entities/canteen_entity.dart';
 import '../../domain/entities/menu_item_entity.dart';
 import '../../domain/entities/recent_order_entity.dart';
@@ -19,7 +20,7 @@ class HomeProvider with ChangeNotifier {
   final SearchCanteensUseCase searchCanteensUseCase;
 
   // Dummy data flag - set to false when Firebase is ready
-  static const bool _useDummyData = true;
+  static const bool _useDummyData = false;
 
   HomeProvider({
     required this.getCanteensUseCase,
@@ -187,7 +188,6 @@ class HomeProvider with ChangeNotifier {
         id: 'canteen_001',
         name: 'The Grill',
         isActive: true,
-        imageUrl: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=200&fit=crop',
         maxConcurrentOrders: 50,
         menuItems: [
           MenuItemEntity(
@@ -196,8 +196,8 @@ class HomeProvider with ChangeNotifier {
             description: 'Beef burger with fries and drink',
             price: 150.0,
             category: 'Burgers',
-            imageUrl: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=300&h=200&fit=crop',
             isAvailable: true,
+            stock: 50,
           ),
           MenuItemEntity(
             id: 'item_002',
@@ -205,8 +205,8 @@ class HomeProvider with ChangeNotifier {
             description: 'Grilled chicken with vegetables',
             price: 180.0,
             category: 'Grilled',
-            imageUrl: 'https://images.unsplash.com/photo-1562967914-608f82629710?w=300&h=200&fit=crop',
             isAvailable: true,
+            stock: 50,
           ),
           MenuItemEntity(
             id: 'item_003',
@@ -214,8 +214,8 @@ class HomeProvider with ChangeNotifier {
             description: 'Crispy chicken wings with sauce',
             price: 120.0,
             category: 'Appetizers',
-            imageUrl: 'https://images.unsplash.com/photo-1608039829572-78524f79c4c7?w=300&h=200&fit=crop',
             isAvailable: true,
+            stock: 50,
           ),
         ],
       ),
@@ -223,7 +223,6 @@ class HomeProvider with ChangeNotifier {
         id: 'canteen_002',
         name: 'Pasta Paradise',
         isActive: true,
-        imageUrl: 'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=400&h=200&fit=crop',
         maxConcurrentOrders: 40,
         menuItems: [
           MenuItemEntity(
@@ -232,8 +231,8 @@ class HomeProvider with ChangeNotifier {
             description: 'Creamy pasta with bacon',
             price: 200.0,
             category: 'Pasta',
-            imageUrl: 'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=300&h=200&fit=crop',
             isAvailable: true,
+            stock: 50,
           ),
           MenuItemEntity(
             id: 'item_005',
@@ -241,8 +240,8 @@ class HomeProvider with ChangeNotifier {
             description: 'Classic tomato and mozzarella pizza',
             price: 250.0,
             category: 'Pizza',
-            imageUrl: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=300&h=200&fit=crop',
             isAvailable: true,
+            stock: 50,
           ),
           MenuItemEntity(
             id: 'item_006',
@@ -250,8 +249,8 @@ class HomeProvider with ChangeNotifier {
             description: 'Fresh salad with Caesar dressing',
             price: 100.0,
             category: 'Salads',
-            imageUrl: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=300&h=200&fit=crop',
             isAvailable: true,
+            stock: 50,
           ),
         ],
       ),
@@ -273,13 +272,13 @@ class HomeProvider with ChangeNotifier {
             name: 'Burger Combo',
             quantity: 2,
             price: 150.0,
-            imageUrl: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=300&h=200&fit=crop',
           ),
         ],
         totalAmount: 300.0,
         fulfillmentSlot: now.add(const Duration(hours: 2)),
         fulfillmentType: FulfillmentType.pickup,
         status: OrderStatus.completed,
+        deliveryFee: 0,
         createdAt: now.subtract(const Duration(days: 2)),
         updatedAt: now.subtract(const Duration(days: 2)),
       ),
@@ -294,13 +293,13 @@ class HomeProvider with ChangeNotifier {
             name: 'Spaghetti Carbonara',
             quantity: 1,
             price: 200.0,
-            imageUrl: 'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=300&h=200&fit=crop',
           ),
         ],
         totalAmount: 200.0,
         fulfillmentSlot: now.add(const Duration(hours: 1)),
         fulfillmentType: FulfillmentType.pickup,
         status: OrderStatus.completed,
+        deliveryFee: 0,
         createdAt: now.subtract(const Duration(days: 5)),
         updatedAt: now.subtract(const Duration(days: 5)),
       ),
@@ -315,13 +314,13 @@ class HomeProvider with ChangeNotifier {
             name: 'Chicken Wings',
             quantity: 3,
             price: 120.0,
-            imageUrl: 'https://images.unsplash.com/photo-1608039829572-78524f79c4c7?w=300&h=200&fit=crop',
           ),
         ],
         totalAmount: 360.0,
         fulfillmentSlot: now.add(const Duration(hours: 3)),
         fulfillmentType: FulfillmentType.delivery,
         status: OrderStatus.delivered,
+        deliveryFee: 10,
         createdAt: now.subtract(const Duration(days: 7)),
         updatedAt: now.subtract(const Duration(days: 7)),
       ),
@@ -333,9 +332,27 @@ class HomeProvider with ChangeNotifier {
     final today = DateTime.now();
     return SettingsEntity(
       breakSlots: [
-        DateTime(today.year, today.month, today.day, 10, 30), // 10:30 AM
-        DateTime(today.year, today.month, today.day, 13, 0),  // 1:00 PM
-        DateTime(today.year, today.month, today.day, 15, 30), // 3:30 PM
+        BreakSlotEntity(
+          startTime: DateTime(today.year, today.month, today.day, 10, 30),
+          endTime: DateTime(today.year, today.month, today.day, 11, 0),
+          dayOfWeek: today.weekday,
+          label: 'Morning Break',
+          isActive: true,
+        ),
+        BreakSlotEntity(
+          startTime: DateTime(today.year, today.month, today.day, 13, 0),
+          endTime: DateTime(today.year, today.month, today.day, 13, 30),
+          dayOfWeek: today.weekday,
+          label: 'Lunch Break',
+          isActive: true,
+        ),
+        BreakSlotEntity(
+          startTime: DateTime(today.year, today.month, today.day, 15, 30),
+          endTime: DateTime(today.year, today.month, today.day, 16, 0),
+          dayOfWeek: today.weekday,
+          label: 'Afternoon Break',
+          isActive: true,
+        ),
       ],
       orderCutoffMinutes: 5,
     );
