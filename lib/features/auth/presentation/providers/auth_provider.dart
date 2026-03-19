@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../config/constants/enum_values.dart';
+import '../../../../core/services/notification_service.dart';
 
 /// Authentication state management provider
 class AuthProvider with ChangeNotifier {
@@ -35,6 +36,21 @@ class AuthProvider with ChangeNotifier {
       // Fetch user role from Firestore
       await _fetchUserRole();
 
+      // Add FCM token to user's token list (arrayUnion avoids duplicates)
+      try {
+        final fcmToken = await NotificationService.instance.getFcmToken();
+        if (fcmToken != null && _firebaseUser != null) {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(_firebaseUser!.uid)
+              .update({
+            'fcm_tokens': FieldValue.arrayUnion([fcmToken]),
+          });
+        }
+      } catch (_) {
+        // FCM token may not be available (e.g. iOS simulator without APNs)
+      }
+
       _isLoading = false;
       notifyListeners();
     } on firebase_auth.FirebaseAuthException catch (e) {
@@ -54,7 +70,6 @@ class AuthProvider with ChangeNotifier {
     required String password,
     required String name,
     required UserRole role,
-    String? classId, // For students
     String? designation, // For teachers
     required String phoneNumber,
     required String classroomNumber,
@@ -72,7 +87,15 @@ class AuthProvider with ChangeNotifier {
         password: password,
       );
 
-      // 2. Create Firestore user document
+      // 2. Get FCM token for push notifications (non-blocking)
+      String? fcmToken;
+      try {
+        fcmToken = await NotificationService.instance.getFcmToken();
+      } catch (_) {
+        // FCM token may not be available (e.g. iOS simulator without APNs)
+      }
+
+      // 3. Create Firestore user document
       await FirebaseFirestore.instance
           .collection('users')
           .doc(userCredential.user!.uid)
@@ -85,9 +108,9 @@ class AuthProvider with ChangeNotifier {
           'classroom_number': classroomNumber,
           'block_name': blockName,
         },
-        if (role == UserRole.student && classId != null) 'class_id': classId,
         if (role == UserRole.teacher && designation != null)
           'designation': designation,
+        'fcm_tokens': fcmToken != null ? [fcmToken] : [],
         'created_at': FieldValue.serverTimestamp(),
       });
 
@@ -140,6 +163,7 @@ class AuthProvider with ChangeNotifier {
       if (currentUser != null) {
         _firebaseUser = currentUser;
         await _fetchUserRole();
+        await _ensureFcmToken();
       }
 
       _isLoading = false;
@@ -175,6 +199,83 @@ class AuthProvider with ChangeNotifier {
       _userRole = null;
       notifyListeners();
     }
+  }
+
+  /// Ensure current device's FCM token is in the user's fcm_tokens array
+  Future<void> _ensureFcmToken() async {
+    try {
+      if (_firebaseUser == null) return;
+
+      final fcmToken = await NotificationService.instance.getFcmToken();
+      debugPrint('FCM Token: $fcmToken');
+      if (fcmToken == null) return;
+
+      // Read current tokens to avoid unnecessary writes
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(_firebaseUser!.uid)
+          .get();
+
+      final data = doc.data();
+      final currentTokens = (data?['fcm_tokens'] as List<dynamic>?) ?? [];
+
+      if (!currentTokens.contains(fcmToken)) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(_firebaseUser!.uid)
+            .update({
+          'fcm_tokens': FieldValue.arrayUnion([fcmToken]),
+        });
+      }
+    } catch (_) {
+      // Non-critical — don't block app startup
+    }
+  }
+
+  /// Toggle between student and deliveryStudent roles
+  Future<void> toggleDeliveryMode() async {
+    if (_firebaseUser == null) return;
+    final newRole = _userRole == UserRole.deliveryStudent
+        ? UserRole.student
+        : UserRole.deliveryStudent;
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(_firebaseUser!.uid)
+        .update({'role': newRole.value});
+
+    if (newRole == UserRole.deliveryStudent) {
+      // Create or update delivery profile
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(_firebaseUser!.uid)
+          .get();
+      final userData = userDoc.data()!;
+      await FirebaseFirestore.instance
+          .collection('delivery_profiles')
+          .doc(_firebaseUser!.uid)
+          .set({
+        'email': userData['email'],
+        'name': userData['name'],
+        'is_active': true,
+        'is_online': false,
+        'current_order_id': null,
+        'last_assigned_at': null,
+        'online_since': null,
+      }, SetOptions(merge: true));
+    } else {
+      // Deactivate delivery profile
+      await FirebaseFirestore.instance
+          .collection('delivery_profiles')
+          .doc(_firebaseUser!.uid)
+          .set({
+        'is_active': false,
+        'is_online': false,
+        'online_since': null,
+      }, SetOptions(merge: true));
+    }
+
+    _userRole = newRole;
+    notifyListeners();
   }
 
   /// Clear error message

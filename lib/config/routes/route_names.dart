@@ -28,6 +28,7 @@ class RouteNames {
   static const String deliveryDashboard = '/delivery-dashboard';
   static const String deliveryRequests = '/delivery-requests';
   static const String deliveryHistory = '/delivery-history';
+  static const String deliveryTracking = '/delivery/:orderId';
 
   // Earnings routes (delivery students only)
   static const String earnings = '/earnings';

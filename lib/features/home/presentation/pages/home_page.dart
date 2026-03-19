@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../../../config/constants/enum_values.dart';
 import '../../../../config/theme/colors.dart';
 import '../../../../config/theme/text_styles.dart';
 import '../../../../shared/widgets/empty_state_widget.dart';
 import '../../../../shared/widgets/loading_spinner.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../delivery/presentation/pages/delivery_home_page.dart';
+import '../../../delivery/presentation/providers/delivery_provider.dart';
 import '../../../order/presentation/providers/order_provider.dart';
 import '../../../order/presentation/widgets/order_history_card.dart';
 import '../providers/home_provider.dart';
@@ -56,58 +59,62 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: AppColors.base,
       body: SafeArea(
-        child: IndexedStack(
-          index: _currentIndex,
-          children: [
-            // Tab 0: Home
-            Consumer2<AuthProvider, HomeProvider>(
-              builder: (context, authProvider, homeProvider, _) {
-                if (homeProvider.isLoading) {
-                  return const LoadingSpinner();
-                }
+        child: Consumer<AuthProvider>(
+          builder: (context, authProvider, _) {
+            final isDelivery =
+                authProvider.userRole == UserRole.deliveryStudent;
+            return IndexedStack(
+              index: _currentIndex,
+              children: [
+                // Tab 0: Home (swaps based on role)
+                if (isDelivery)
+                  const DeliveryHomePage()
+                else
+                  Consumer<HomeProvider>(
+                    builder: (context, homeProvider, _) {
+                      if (homeProvider.isLoading) {
+                        return const LoadingSpinner();
+                      }
 
-                if (homeProvider.errorMessage != null) {
-                  return EmptyStateWidget(
-                    icon: Icons.error_outline,
-                    title: 'Something went wrong',
-                    subtitle: homeProvider.errorMessage,
-                    action: ElevatedButton(
-                      onPressed: () => _initializeData(),
-                      child: const Text('Retry'),
-                    ),
-                  );
-                }
+                      if (homeProvider.errorMessage != null) {
+                        return EmptyStateWidget(
+                          icon: Icons.error_outline,
+                          title: 'Something went wrong',
+                          subtitle: homeProvider.errorMessage,
+                          action: ElevatedButton(
+                            onPressed: () => _initializeData(),
+                            child: const Text('Retry'),
+                          ),
+                        );
+                      }
 
-                return RefreshIndicator(
-                  onRefresh: () async {
-                    if (authProvider.firebaseUser != null) {
-                      await homeProvider
-                          .refresh(authProvider.firebaseUser!.uid);
-                    }
-                  },
-                  child: CustomScrollView(
-                    slivers: [
-                      // Header with welcome message and search
-                      _buildHeader(authProvider),
-
-                      // Recently Ordered Section
-                      if (homeProvider.recentOrders.isNotEmpty)
-                        _buildRecentOrdersSection(homeProvider),
-
-                      // Canteens Section
-                      _buildCanteensSection(homeProvider),
-
-                      // Bottom padding for FAB
-                      const SliverToBoxAdapter(
-                          child: SizedBox(height: 100)),
-                    ],
+                      return RefreshIndicator(
+                        onRefresh: () async {
+                          if (authProvider.firebaseUser != null) {
+                            await homeProvider
+                                .refresh(authProvider.firebaseUser!.uid);
+                          }
+                        },
+                        child: CustomScrollView(
+                          slivers: [
+                            _buildHeader(authProvider),
+                            if (homeProvider.recentOrders.isNotEmpty)
+                              _buildRecentOrdersSection(homeProvider),
+                            _buildCanteensSection(homeProvider),
+                            const SliverToBoxAdapter(
+                                child: SizedBox(height: 100)),
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
-            // Tab 1: Orders
-            _buildOrdersTab(),
-          ],
+                // Tab 1: Orders
+                _buildOrdersTab(),
+                // Tab 2: Profile
+                _buildProfileTab(),
+              ],
+            );
+          },
         ),
       ),
       floatingActionButton: _currentIndex == 0
@@ -151,7 +158,7 @@ class _HomePageState extends State<HomePage> {
             Text('Welcome back,', style: AppTextStyles.bodySmall),
             const SizedBox(height: 4),
             Text(
-              '${authProvider.firebaseUser?.displayName ?? "User"} 👋',
+              '${authProvider.firebaseUser?.displayName ?? ""}',
               style: AppTextStyles.h3,
             ),
             const SizedBox(height: 16),
@@ -324,6 +331,223 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildProfileTab() {
+    return Consumer2<AuthProvider, DeliveryProvider>(
+      builder: (context, authProvider, deliveryProvider, _) {
+        final user = authProvider.firebaseUser;
+        final role = authProvider.userRole;
+        final isDelivery = role == UserRole.deliveryStudent;
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
+              CircleAvatar(
+                radius: 40,
+                backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                child: Text(
+                  (user?.displayName ?? 'U')[0].toUpperCase(),
+                  style: AppTextStyles.h2.copyWith(color: AppColors.primary),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                user?.displayName ?? 'User',
+                style: AppTextStyles.h3,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                user?.email ?? '',
+                style: AppTextStyles.bodySmall
+                    .copyWith(color: AppColors.textSecondary),
+              ),
+              if (role != null) ...[
+                const SizedBox(height: 8),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    role.displayName,
+                    style: AppTextStyles.bodySmall
+                        .copyWith(color: AppColors.primary),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 24),
+
+              // Delivery Mode Toggle (students only — teachers can't become delivery persons)
+              if (role == UserRole.student || isDelivery) Container(
+                decoration: BoxDecoration(
+                  color: AppColors.base,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.borderColor),
+                ),
+                child: SwitchListTile(
+                  title: Text('Delivery Mode', style: AppTextStyles.bodyLarge),
+                  subtitle: Text(
+                    'Earn by delivering orders to classmates',
+                    style: AppTextStyles.bodySmall
+                        .copyWith(color: AppColors.textSecondary),
+                  ),
+                  value: isDelivery,
+                  activeColor: AppColors.primary,
+                  onChanged: (_) async {
+                    await authProvider.toggleDeliveryMode();
+                    if (authProvider.userRole == UserRole.deliveryStudent &&
+                        user != null) {
+                      deliveryProvider.fetchDeliveryHistory(user.uid);
+                    }
+                  },
+                ),
+              ),
+
+              // Delivery Stats Section (only when in delivery mode)
+              if (isDelivery) ...[
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildStatCard(
+                        'Delivered',
+                        '${deliveryProvider.deliveryHistory.length}',
+                        Icons.check_circle_outline,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildStatCard(
+                        'Earnings',
+                        '\u20B9${deliveryProvider.deliveryHistory.fold<double>(0, (sum, o) => sum + o.deliveryFee).toStringAsFixed(0)}',
+                        Icons.account_balance_wallet_outlined,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.base,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.borderColor),
+                  ),
+                  child: deliveryProvider.activeOrder != null
+                      ? Row(
+                          children: [
+                            Icon(Icons.delivery_dining,
+                                color: AppColors.primary),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Current Order',
+                                      style: AppTextStyles.bodySmall.copyWith(
+                                          color: AppColors.textSecondary)),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    deliveryProvider
+                                        .activeOrder!.canteenName,
+                                    style: AppTextStyles.bodyLarge,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color:
+                                    AppColors.primary.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                deliveryProvider
+                                    .activeOrder!.status.displayName,
+                                style: AppTextStyles.bodySmall
+                                    .copyWith(color: AppColors.primary),
+                              ),
+                            ),
+                          ],
+                        )
+                      : Row(
+                          children: [
+                            Icon(Icons.delivery_dining,
+                                color: AppColors.textSecondary),
+                            const SizedBox(width: 12),
+                            Text(
+                              'No active delivery',
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                  color: AppColors.textSecondary),
+                            ),
+                          ],
+                        ),
+                ),
+              ],
+
+              const SizedBox(height: 40),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () async {
+                    await authProvider.signOut();
+                    if (context.mounted) {
+                      context.go('/login');
+                    }
+                  },
+                  icon: const Icon(Icons.logout, color: AppColors.error),
+                  label: Text(
+                    'Logout',
+                    style: AppTextStyles.bodyMedium
+                        .copyWith(color: AppColors.error),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: AppColors.error),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildStatCard(String label, String value, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.base,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.borderColor),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: AppColors.primary, size: 28),
+          const SizedBox(height: 8),
+          Text(value, style: AppTextStyles.h3),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: AppTextStyles.bodySmall
+                .copyWith(color: AppColors.textSecondary),
+          ),
+        ],
+      ),
     );
   }
 

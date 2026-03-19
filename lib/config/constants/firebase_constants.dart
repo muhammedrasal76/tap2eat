@@ -12,9 +12,11 @@ class FirebaseConstants {
   static const String userRole = 'role';
   static const String userEmail = 'email';
   static const String userName = 'name';
-  static const String userClassId = 'class_id'; // Students only
   static const String userDesignation = 'designation'; // Teachers only
   static const String userEarningsBalance = 'earnings_balance'; // Delivery students only
+  static const String userIsOnline = 'is_online'; // Delivery students only
+  static const String userCurrentOrderId = 'current_order_id'; // Delivery students only
+  static const String userFcmTokens = 'fcm_tokens';
   static const String userCreatedAt = 'created_at';
 
   // Order document fields (D2)
@@ -56,4 +58,5 @@ class FirebaseConstants {
   // Additional collections
   static const String auditLogsCollection = 'audit_logs';
   static const String earningsCollection = 'earnings';
+  static const String deliveryProfilesCollection = 'delivery_profiles';
 }

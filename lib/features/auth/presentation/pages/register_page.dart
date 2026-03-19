@@ -23,7 +23,6 @@ class _RegisterPageState extends State<RegisterPage> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _classIdController = TextEditingController();
   final _departmentController = TextEditingController();
   final _designationController = TextEditingController();
   final _phoneController = TextEditingController();
@@ -40,7 +39,6 @@ class _RegisterPageState extends State<RegisterPage> {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
-    _classIdController.dispose();
     _departmentController.dispose();
     _designationController.dispose();
     _phoneController.dispose();
@@ -235,21 +233,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   Widget _buildRoleSpecificFields() {
     if (_selectedRole == UserRole.student) {
-      return Column(
-        children: [
-          AppTextField(
-            controller: _classIdController,
-            labelText: 'Class Number/ID',
-            hintText: 'e.g., 20251234',
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter your class ID';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 16),
-          AppTextField(
+      return AppTextField(
             controller: _departmentController,
             labelText: 'Department',
             hintText: 'e.g., Computer Science',
@@ -259,9 +243,7 @@ class _RegisterPageState extends State<RegisterPage> {
               }
               return null;
             },
-          ),
-        ],
-      );
+          );
     } else {
       return AppTextField(
         controller: _designationController,
@@ -375,9 +357,6 @@ class _RegisterPageState extends State<RegisterPage> {
       password: _passwordController.text,
       name: _nameController.text.trim(),
       role: _selectedRole,
-      classId: _selectedRole == UserRole.student
-          ? _classIdController.text.trim()
-          : null,
       designation: _selectedRole == UserRole.teacher
           ? _designationController.text.trim()
           : null,

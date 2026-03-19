@@ -11,6 +11,8 @@ import '../../features/order/presentation/pages/checkout_page.dart';
 import '../../features/order/presentation/pages/order_confirmation_page.dart';
 import '../../features/order/presentation/pages/order_detail_page.dart';
 import '../../features/order/presentation/pages/order_history_page.dart';
+import '../../features/delivery/presentation/pages/delivery_home_page.dart';
+import '../../features/delivery/presentation/pages/delivery_tracking_page.dart';
 import 'route_names.dart';
 
 /// App router configuration using GoRouter
@@ -56,7 +58,7 @@ class AppRouter {
       GoRoute(
         path: RouteNames.deliveryStudentHome,
         name: 'delivery-student-home',
-        builder: (context, state) => const HomePage(),
+        builder: (context, state) => const DeliveryHomePage(),
       ),
 
       // Menu routes
@@ -107,9 +109,15 @@ class AppRouter {
       GoRoute(
         path: RouteNames.deliveryDashboard,
         name: 'delivery-dashboard',
-        builder: (context, state) => const Scaffold(
-          body: Center(child: Text('Delivery Dashboard - To be implemented')),
-        ),
+        builder: (context, state) => const DeliveryHomePage(),
+      ),
+      GoRoute(
+        path: RouteNames.deliveryTracking,
+        name: 'delivery-tracking',
+        builder: (context, state) {
+          final orderId = state.pathParameters['orderId']!;
+          return DeliveryTrackingPage(orderId: orderId);
+        },
       ),
 
       // Earnings routes

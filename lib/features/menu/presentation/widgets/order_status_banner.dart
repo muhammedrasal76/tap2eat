@@ -2,24 +2,24 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/colors.dart';
 import '../../../../config/theme/text_styles.dart';
 
-/// Banner showing current order load and estimated wait time
+/// Banner showing current order load status
 class OrderStatusBanner extends StatelessWidget {
   final int currentOrders;
   final int maxOrders;
-  final int estimatedWaitMinutes;
 
   const OrderStatusBanner({
     super.key,
     required this.currentOrders,
     required this.maxOrders,
-    required this.estimatedWaitMinutes,
   });
 
   @override
   Widget build(BuildContext context) {
-    final percentFull = (currentOrders / maxOrders * 100).clamp(0, 100).toInt();
-    final isNearCapacity = percentFull >= 80;
-    final isFull = percentFull >= 95;
+    final isFull = currentOrders >= maxOrders;
+    final percentFull = maxOrders > 0
+        ? (currentOrders / maxOrders * 100).clamp(0, 100).toInt()
+        : 0;
+    final isNearCapacity = !isFull && percentFull >= 80;
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -61,11 +61,11 @@ class OrderStatusBanner extends StatelessWidget {
 
   String _getStatusText(bool isFull, bool isNearCapacity) {
     if (isFull) {
-      return 'At capacity: $currentOrders/$maxOrders orders. Wait time: ~${estimatedWaitMinutes + 5} mins.';
+      return 'Not accepting orders right now ($currentOrders/$maxOrders)';
     } else if (isNearCapacity) {
-      return 'Current orders: $currentOrders/$maxOrders. Wait time: ~$estimatedWaitMinutes mins.';
+      return 'Filling up fast: $currentOrders/$maxOrders orders';
     } else {
-      return 'Available: $currentOrders/$maxOrders orders. Wait time: ~$estimatedWaitMinutes mins.';
+      return 'Accepting orders: $currentOrders/$maxOrders';
     }
   }
 

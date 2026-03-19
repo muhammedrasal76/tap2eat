@@ -68,4 +68,13 @@ class OrderRepositoryImpl implements OrderRepository {
       throw Exception('Repository: Failed to get order detail - $e');
     }
   }
+
+  @override
+  Future<int> getActiveOrderCount(String canteenId) async {
+    try {
+      return await remoteDataSource.getActiveOrderCount(canteenId);
+    } catch (e) {
+      throw Exception('Repository: Failed to get active order count - $e');
+    }
+  }
 }

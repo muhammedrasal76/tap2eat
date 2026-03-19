@@ -78,7 +78,8 @@ class OrderConfirmationPage extends StatelessWidget {
                     child: AppButton(
                       text: 'View Order',
                       onPressed: () {
-                        context.go('/order/$orderId');
+                        context.go(RouteNames.studentHome);
+                        context.push('/order/$orderId');
                       },
                     ),
                   ),

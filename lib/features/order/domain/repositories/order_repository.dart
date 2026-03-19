@@ -19,4 +19,7 @@ abstract class OrderRepository {
 
   /// Fetch a single order by ID
   Future<RecentOrderEntity> getOrderDetail(String orderId);
+
+  /// Get count of active orders for a canteen
+  Future<int> getActiveOrderCount(String canteenId);
 }

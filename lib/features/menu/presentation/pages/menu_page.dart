@@ -6,6 +6,7 @@ import '../../../../config/theme/colors.dart';
 import '../../../../config/theme/text_styles.dart';
 import '../../../home/domain/entities/canteen_entity.dart';
 import '../../../home/domain/entities/menu_item_entity.dart';
+import '../../../order/presentation/providers/order_provider.dart';
 import '../providers/cart_provider.dart';
 import '../widgets/menu_item_card.dart';
 import '../widgets/order_status_banner.dart';
@@ -28,9 +29,13 @@ class _MenuPageState extends State<MenuPage> {
   @override
   void initState() {
     super.initState();
-    // Initialize cart for this canteen
+    // Initialize cart for this canteen and fetch active order count
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<CartProvider>().setCurrentCanteen(widget.canteen);
+      context.read<OrderProvider>().fetchActiveOrderCount(
+            widget.canteen.id,
+            maxOrders: widget.canteen.maxConcurrentOrders,
+          );
     });
   }
 
@@ -51,10 +56,12 @@ class _MenuPageState extends State<MenuPage> {
                 child: Column(
                   children: [
                     // Order status banner
-                    OrderStatusBanner(
-                      currentOrders: 35, // TODO: Fetch from Firestore
-                      maxOrders: widget.canteen.maxConcurrentOrders,
-                      estimatedWaitMinutes: 15,
+                    Consumer<OrderProvider>(
+                      builder: (context, orderProvider, _) =>
+                          OrderStatusBanner(
+                        currentOrders: orderProvider.activeOrderCount,
+                        maxOrders: widget.canteen.maxConcurrentOrders,
+                      ),
                     ),
                     const SizedBox(height: 24),
 
@@ -161,6 +168,18 @@ class _MenuPageState extends State<MenuPage> {
                 child: MenuItemCard(
                   item: item,
                   onAdd: () {
+                    final orderProvider = context.read<OrderProvider>();
+                    if (orderProvider.isAtCapacity) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                              'Canteen is at full capacity. Try again later.'),
+                          duration: Duration(seconds: 2),
+                          backgroundColor: AppColors.error,
+                        ),
+                      );
+                      return;
+                    }
                     context.read<CartProvider>().addItem(item);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(

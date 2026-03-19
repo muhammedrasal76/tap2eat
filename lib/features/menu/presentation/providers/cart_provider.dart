@@ -25,9 +25,7 @@ class CartProvider with ChangeNotifier {
   Map<String, CartItem> get items => _items;
   List<CartItem> get cartItems => _items.values.toList();
 
-  int get totalItems {
-    return _items.values.fold(0, (sum, item) => sum + item.quantity);
-  }
+  int get totalItems => _items.length;
 
   double get subtotal {
     return _items.values.fold(0.0, (sum, item) => sum + item.totalPrice);

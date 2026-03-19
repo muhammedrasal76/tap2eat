@@ -7,6 +7,7 @@ abstract class OrderRemoteDataSource {
   Future<String> createOrder(Map<String, dynamic> orderData);
   Future<List<RecentOrderModel>> getOrderHistory(String userId);
   Future<RecentOrderModel> getOrderDetail(String orderId);
+  Future<int> getActiveOrderCount(String canteenId);
 }
 
 class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
@@ -89,6 +90,22 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
       return RecentOrderModel.fromJson(data);
     } catch (e) {
       throw Exception('Failed to fetch order detail: $e');
+    }
+  }
+
+  @override
+  Future<int> getActiveOrderCount(String canteenId) async {
+    try {
+      final querySnapshot = await firestore
+          .collection(FirebaseConstants.ordersCollection)
+          .where(FirebaseConstants.orderCanteenId, isEqualTo: canteenId)
+          .where(FirebaseConstants.orderStatus,
+              whereIn: ['pending', 'preparing', 'ready'])
+          .get();
+
+      return querySnapshot.docs.length;
+    } catch (e) {
+      throw Exception('Failed to fetch active order count: $e');
     }
   }
 }

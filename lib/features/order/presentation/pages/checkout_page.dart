@@ -80,16 +80,18 @@ class CheckoutPage extends StatelessWidget {
 
                         const SizedBox(height: 20),
 
-                        // Fulfillment type
-                        Text('Fulfillment', style: AppTextStyles.label.copyWith(
-                          color: AppColors.textSecondary,
-                        )),
-                        const SizedBox(height: 8),
-                        FulfillmentTypeSelector(
-                          selected: order.fulfillmentType,
-                          onChanged: (type) =>
-                              order.setFulfillmentType(type),
-                        ),
+                        // Fulfillment type (teachers only — students always pickup)
+                        if (context.read<AuthProvider>().userRole == UserRole.teacher) ...[
+                          Text('Fulfillment', style: AppTextStyles.label.copyWith(
+                            color: AppColors.textSecondary,
+                          )),
+                          const SizedBox(height: 8),
+                          FulfillmentTypeSelector(
+                            selected: order.fulfillmentType,
+                            onChanged: (type) =>
+                                order.setFulfillmentType(type),
+                          ),
+                        ],
 
                         // Break slot picker (delivery only)
                         if (order.fulfillmentType ==
@@ -109,6 +111,9 @@ class CheckoutPage extends StatelessWidget {
                                 selected: order.selectedBreakSlot,
                                 onSelected: (slot) =>
                                     order.selectBreakSlot(slot),
+                                showNowSlot: order.isDeliveryNowAvailable,
+                                isNowSelected: order.isNowSlotSelected,
+                                onNowSelected: () => order.selectNowSlot(),
                               );
                             },
                           ),

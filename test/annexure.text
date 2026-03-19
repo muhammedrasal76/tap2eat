@@ -1,0 +1,132 @@
+
+# INPUT AND OUTPUT DESIGN
+
+## INPUT DESIGN
+
+The input design is the process of converting the user-oriented inputs into the computer-based format. The goal of designing input data is to make the automation as easy and free from errors as possible. For providing a good input design for the Tap2Eat Admin application, easy data input and selection features are adopted. Form validations, dropdown selections, toggle switches, and date/time pickers are used throughout the application to ensure accurate and efficient data entry. Input fields include real-time validation with descriptive error messages to guide administrators in providing correct information.
+
+## MAJOR INPUT SCREENS
+
+### 1. Login Screen
+The Login Screen is the entry point for all administrators accessing the Tap2Eat Admin panel. It contains an email text field with email format validation and a password field with obscured text input and a visibility toggle. The form validates that the email contains a valid format and the password is at least 6 characters long. A "Sign In" button submits the credentials to Firebase Authentication. Error messages are displayed via snackbar notifications for invalid credentials or network failures. Role-based routing automatically redirects canteen admins and master admins to their respective dashboards upon successful authentication.
+
+### 2. Menu Item Form Dialog
+The Menu Item Form Dialog is used by canteen administrators to add new menu items or edit existing ones. It includes the following input fields: Item Name (required text field), Description (optional multi-line text field), Category (dropdown selection from Breakfast, Lunch, Snacks, Beverages, and Desserts), Price in rupees (numeric field with decimal support and currency prefix), Image URL (optional text field with live image preview), and Stock Quantity (numeric field, where setting to 0 marks the item as unavailable). All required fields include inline validation. The dialog provides Cancel and Add/Update action buttons, with a loading indicator shown during the save operation.
+
+### 3. Canteen Settings Form
+The Canteen Settings Screen allows canteen administrators to configure their canteen's operational parameters. It is organized into two sections — Basic Information and Operations. The Basic Information section includes a Canteen Name text field (required) and a Canteen Status toggle switch that sets the canteen as Active or Inactive. The Operations section includes a Max Concurrent Orders numeric field that controls how many orders can be accepted per time slot. The form provides Save Changes and Reset buttons. The Reset button reverts all fields to the last saved values from Firestore.
+
+### 4. Break Slot Form
+The Break Slot Form is used by master administrators to manage campus-wide break slots that determine when delivery is available. Input fields include a Label (e.g., "Morning Break", "Lunch Break"), Day of the week selection, Start Time and End Time pickers, and an Active toggle switch. Break slots are grouped by day for easy management. The form also includes a global Order Cutoff Minutes setting that controls how many minutes before a slot's start time orders stop being accepted.
+
+### 5. Delivery Assignment Dialog
+The Delivery Assignment Dialog allows canteen administrators to assign a delivery student to an order. It loads a list of available delivery students from Firestore and displays them as selectable radio options showing student name and availability status. The administrator selects a student and clicks the "Send Offer" button to trigger a Cloud Function that creates a delivery assignment with a timeout. A loading state is shown during student list retrieval and during the assignment process.
+
+### 6. Order Filters Bar
+The Order Filters Bar is displayed on the Canteen Admin Dashboard and provides multiple filter inputs for the orders list. It includes a Search text field for filtering by order ID or customer name, a Status dropdown (All, Pending, Accepted, Preparing, Ready, Picked Up, Delivered, Cancelled), an Order Type dropdown (All, Pickup, Delivery), a Date Range picker for filtering orders by date, and a Sort dropdown for ordering results. All filters work in combination and update the orders list in real time via Firestore streams.
+
+### 7. Audit Log Filters
+The Audit Logs Screen provides filter inputs for browsing system activity logs. It includes a Search text field for filtering by user name, action, or resource, a Date Range picker to narrow logs to a specific time period, a User filter dropdown, and an Action Type filter (e.g., create, update, delete, login). A Refresh button allows manual reload of the logs. Filters are applied server-side through Firestore queries for efficient data retrieval.
+
+## OUTPUT DESIGN
+
+The output design has been done so that the results of processing should be communicated to the user. Effective output design will improve the clarity and performance of outputs. Output is the main reason for developing the system and the basis on which they will evaluate the usefulness of the application. The output design phase of the system is concerned with the convergence of information to the end user in a friendly manner. The output design should be efficient, intelligible so that the system relationship with the end user is improved and thereby enhancing the process of decision making.
+
+## MAJOR OUTPUT SCREENS
+
+### 1. Canteen Admin Dashboard
+The Canteen Admin Dashboard is the primary output screen for canteen administrators. It displays analytics summary cards showing key metrics — Total Orders, Total Revenue, Average Order Value, and Pending Orders — for the selected time period (Today, This Week, This Month). Below the summary cards, interactive charts are displayed including a Peak Hours bar chart showing order distribution across hours and a Popular Items list ranking the most ordered menu items. The lower section displays a real-time Active Orders table with columns for Order ID, Customer, Items, Type (Pickup/Delivery), Status, and Total Amount. Each order row is clickable to open the Order Details Dialog. A Delivery Students Status Card shows the current availability of delivery personnel.
+
+### 2. Master Admin Dashboard
+The Master Admin Dashboard provides system-wide analytics for master administrators overseeing all canteens. It displays stat cards for Total Orders, Total Revenue, Active Canteens, and Total Users across the platform. The analytics section includes an Orders Over Time line chart, an Order Type pie chart showing the distribution between Pickup and Delivery orders, and a Revenue by Canteen bar chart comparing earnings across canteens. A time period selector (Today, This Week, This Month) controls the date range for all displayed metrics. Data is loaded from the MasterAnalyticsProvider with 5-minute in-memory caching to optimize performance.
+
+### 3. Menu Management Screen
+The Menu Management Screen displays all menu items for the canteen in a responsive table layout. Each row shows the item's Image (thumbnail preview from the image URL), Name, Description, Category (shown as a colored chip), Price (formatted in rupees), Stock quantity, and action buttons for Edit and Delete. Items can be filtered by category using tab navigation. An "Add Item" button in the header opens the Menu Item Form Dialog. The table supports empty state display when no items exist for a category.
+
+### 4. Order Details Dialog
+The Order Details Dialog provides a comprehensive view of a single order. It displays customer information (name, email, phone) loaded from Firestore, the list of ordered items with quantities and individual prices, the order total, order type (Pickup or Delivery), and the current order status shown as a colored badge. For delivery orders, it shows the assigned delivery student's information and a delivery status timeline. If the order is awaiting delivery acceptance, a live countdown timer displays the remaining seconds before the assignment times out. Status action buttons allow the canteen admin to update the order status (e.g., Accept, Mark as Preparing, Mark as Ready) or assign a delivery student via the Delivery Assignment Dialog.
+
+### 5. Audit Logs Screen
+The Audit Logs Screen displays a paginated data table of all system activity using the DataTable2 package. Each row shows the Timestamp (formatted date and time), User (name and email), Role (canteen_admin or master_admin), Action performed (create, update, delete, login), Resource type, and Resource ID. Rows are expandable to show additional details about the change, including before/after values when available. The table supports skeleton loading states during data retrieval and a retry error widget for failed requests. A refresh button in the page header allows manual reload of the logs.
+
+### 6. Break Slots Management Screen
+The Break Slots Management Screen displays all configured break slots grouped by day of the week. Each slot card shows the Label, Day, Start Time, End Time, and Active status as a colored indicator. Slots are organized in a visually grouped layout making it easy to see the daily schedule at a glance. The screen also displays the global Order Cutoff Minutes setting. Edit and Delete action buttons are provided for each slot, and an "Add Slot" button allows creating new break slots. The screen provides visual feedback for active versus inactive slots using distinct color coding.
+
+---
+
+# INPUT AND OUTPUT DESIGN — Tap2Eat Student App
+
+## INPUT DESIGN
+
+The input design for the Tap2Eat Student application focuses on providing a seamless mobile-first experience for students and teachers ordering food from campus canteens. The app employs intuitive form inputs, toggle controls, search bars, and contextual action buttons to ensure fast and error-free data entry. All input fields include real-time validation with descriptive error messages, and the interface adapts dynamically based on the user's role (Student, Teacher, or Delivery Student).
+
+## MAJOR INPUT SCREENS
+
+### 1. Onboarding Screen
+The Onboarding Screen is the first screen presented to new users after installation. It consists of a 3-page horizontal carousel introducing the app's features — ordering food, campus delivery, and quick pickup. Navigation controls include a "Skip" text button to bypass onboarding, a "Next" button to advance through pages, and a "Get Started" button on the final page that navigates to the Login Screen. A page indicator displays the current position within the carousel. Onboarding is shown only once and is tracked via local state.
+
+### 2. Login Screen
+The Login Screen provides the authentication entry point for all student app users. It contains an email text field with email format validation and a password field with obscured text input and a visibility toggle icon. The form validates that the email follows a valid format and the password is at least 6 characters long. A "Sign In" button submits the credentials to Firebase Authentication. Error messages are displayed via snackbar notifications for invalid credentials or network failures. A "Sign Up" link at the bottom navigates to the Registration Screen for new users.
+
+### 3. Registration Screen
+The Registration Screen is a multi-section scrollable form for creating new user accounts. The Common Fields section includes Full Name (required text field), Email (required, with email format validation), and Password (required, minimum 6 characters, with a visibility toggle). A Role Toggle allows the user to select between Student and Teacher roles using a segmented button control. Based on the selected role, Role-Specific Fields are displayed — Department (text field) for students, or Designation (text field) for teachers. The Address Details section includes Phone Number (numeric field), Classroom/Office (text field), and Block (text field). All required fields include inline validation. A "Create Account" button submits the form to Firebase Authentication and creates the user profile in Firestore. A loading indicator is shown during the registration process.
+
+### 4. Home Search Bar
+The Home Screen features a search bar at the top that allows users to filter canteens and menu items in real time. As the user types, the displayed canteen cards and their associated menu items are filtered based on name matching. The search field includes a search icon prefix and clears results when the text is removed. This input operates entirely on the client side using the already-loaded canteen and menu data from Firestore streams.
+
+### 5. Menu Item Selection
+The Menu Page provides add-to-cart functionality for each menu item displayed. Each item card includes an "Add" button that adds the item to the cart with an initial quantity of one. Once added, the button transforms into a quantity control widget with increment (+) and decrement (−) buttons flanking the current quantity. Items marked as unavailable (zero stock) display a disabled "Unavailable" indicator instead of the add button. Adding an item from a different canteen when the cart already contains items triggers a confirmation dialog asking the user to clear the existing cart.
+
+### 6. Checkout Form
+The Checkout Page presents a comprehensive order configuration form. A Fulfillment Type Selector provides two options — Pickup and Delivery — displayed as selectable cards with icons. When Delivery is selected, a Break Slot Picker appears showing available time slots grouped by day, along with a "Deliver Now" toggle option for immediate delivery. Each cart item displays quantity adjustment controls (increment, decrement, and delete buttons). The order summary updates dynamically as items and fulfillment options change. A "Place Order" button submits the order to Firestore through the Order Provider. The button is disabled during submission and displays a loading state.
+
+### 7. Delivery Status Toggle
+The Delivery Home Page features an Online/Offline toggle switch for delivery students at the top of the screen. Toggling online updates the delivery student's availability status in Firestore, making them visible to canteen administrators for delivery assignments. Toggling offline removes the student from the available delivery pool. The toggle provides immediate visual feedback with color-coded status indicators — green for online and grey for offline.
+
+### 8. Delivery Assignment Popup
+When a delivery assignment notification is received, a modal popup dialog is presented to the delivery student. The popup displays order details including the canteen name, delivery fee, and order items. Two action buttons are provided — "Accept" to accept the delivery assignment and "Reject" to decline it. A countdown timer is displayed showing the remaining seconds before the assignment automatically expires. If the timer reaches zero, the popup is automatically dismissed and the assignment is marked as expired.
+
+### 9. Delivery Tracking Controls
+The Delivery Tracking Page provides contextual status update buttons based on the current delivery state. When the delivery is in "Picked Up" status, a "Start Delivering" button is displayed. When the delivery is in transit, a "Mark as Delivered" button appears. Each button triggers a status update to Firestore through the Delivery Provider. Buttons include loading states during the update process and are disabled to prevent duplicate submissions.
+
+### 10. Profile Section
+The Profile Page provides a delivery mode toggle and account management controls. For students eligible for delivery, a "Delivery Mode" switch enables or disables the delivery student functionality, which controls access to the Delivery Home Page via bottom navigation. A "Logout" button signs the user out of Firebase Authentication and redirects to the Login Screen. The profile section also displays the user's role and account information in a read-only format.
+
+## OUTPUT DESIGN
+
+The output design for the Tap2Eat Student application focuses on presenting order information, delivery status, and canteen data in a clear, visually organized manner optimized for mobile screens. The app uses cards, status badges, animated transitions, and real-time data streams to keep users informed about their orders and delivery activities. Color coding and iconography are used consistently to convey status information at a glance.
+
+## MAJOR OUTPUT SCREENS
+
+### 1. Splash Screen
+The Splash Screen is displayed immediately upon app launch while Firebase Authentication state is being resolved. It shows the Tap2Eat logo with a loading animation. Once authentication state is determined, the screen performs role-based routing — unauthenticated users are directed to the Onboarding or Login Screen, while authenticated users are routed to the Home Page. The splash screen also checks whether the user has completed onboarding previously to determine the appropriate destination.
+
+### 2. Home Page
+The Home Page serves as the primary dashboard for students and teachers. It displays a personalized welcome header showing the user's name. Below the header, a Recent Orders section presents a horizontal scrollable list of the user's most recent orders, each showing the order ID, status badge, and total amount. The main content area displays Canteen Cards listing all available canteens, each showing the canteen name, active/inactive status indicator, and the number of available menu items. Tapping a canteen card navigates to the Menu Page for that canteen. The page data is loaded from Firestore streams and updates in real time.
+
+### 3. Menu Page
+The Menu Page displays all menu items for a selected canteen organized by category. At the top, an Order Status Banner may appear if the user has an active order from this canteen, showing the current order status with a colored background and a tap action to view order details. Menu items are grouped under category headers (Breakfast, Lunch, Snacks, Beverages, Desserts) and displayed as cards showing the item image (loaded from URL with placeholder fallback), item name, description, price formatted in rupees, and availability status. Items with zero stock are visually dimmed and marked as unavailable. A floating cart summary bar appears at the bottom when items are added to the cart, showing the total items count and cart total with a "View Cart" button.
+
+### 4. Checkout Summary
+The Checkout Page displays an Order Summary Card that provides a financial breakdown of the current order. It shows the Subtotal (sum of all item prices multiplied by quantities), a Delivery Fee (displayed only when Delivery fulfillment type is selected), and the Total amount. The summary card updates dynamically as items are added, removed, or quantities are changed. Individual cart items are listed with their name, quantity, unit price, and line total. The canteen name is displayed at the top of the checkout for confirmation.
+
+### 5. Order Confirmation Page
+The Order Confirmation Page is displayed after a successful order placement. It features a success animation (animated checkmark) at the center of the screen, followed by a confirmation message and the generated Order ID displayed in a prominent text style. A "View Order" button navigates to the Order Detail Page, and a "Back to Home" button returns the user to the Home Page. The page uses a clean, celebratory layout to provide positive feedback upon successful order submission.
+
+### 6. Order Detail Page
+The Order Detail Page provides a comprehensive view of a single order. At the top, a Status Badge displays the current order status with role-appropriate color coding (e.g., green for Delivered, orange for Preparing, blue for Picked Up). The page sections include Canteen Information (canteen name), Fulfillment Information (Pickup or Delivery with the selected break slot label and time), an Items List showing each ordered item with quantity and price, and a Price Summary showing subtotal, delivery fee (if applicable), and total. For delivery orders, delivery student information is displayed when assigned. The page data is loaded from Firestore and reflects real-time status updates.
+
+### 7. Order History Page
+The Order History Page displays a paginated list of the user's past orders. Each order is rendered as a card showing the Order ID, canteen name, order date and time, number of items, total amount, and a Status Badge with color coding. Orders are sorted by date in descending order (most recent first). The page supports pull-to-refresh for manual data reload and uses Firestore pagination for efficient data retrieval. Empty state messaging is displayed when the user has no order history. Tapping an order card navigates to the Order Detail Page.
+
+### 8. Delivery Home Page
+The Delivery Home Page is the primary dashboard for delivery students. At the top, an Online Status Banner displays the current availability status with color coding — a green banner for online and a grey banner for offline. When the student has an active delivery, an Active Delivery Card is displayed prominently showing the order ID, canteen name, delivery status, and a tap action to navigate to the Delivery Tracking Page. Below, a Delivery History List shows completed and past delivery assignments as cards with order details, delivery fee earned, and completion status. The page loads data from the Delivery Provider and updates via Firestore streams.
+
+### 9. Delivery Assignment Popup
+The Delivery Assignment Popup is a modal dialog displayed when a new delivery assignment is received via push notification. It shows a circular Countdown Timer with animated progress indicating the remaining seconds to respond. Below the timer, the popup displays order details including the canteen name, number of items, delivery address information, and the delivery fee amount. The popup provides visual urgency through the countdown animation and automatically dismisses when the timer expires, providing feedback that the assignment was not accepted in time.
+
+### 10. Delivery Tracking Page
+The Delivery Tracking Page provides a detailed view of an active delivery assignment. A Status Timeline at the top displays the progression of delivery states (Assigned, Picked Up, Delivering, Delivered) with visual indicators showing completed, current, and upcoming steps. The Order Items section lists all items in the delivery with quantities. Contextual Action Buttons are displayed at the bottom based on the current delivery state — showing the appropriate next action (e.g., "Start Delivering" or "Mark as Delivered"). The page updates in real time as the delivery status changes in Firestore, and the timeline animation reflects the current progress.
+
+### 11. Profile Page
+The Profile Page displays the user's account information in a card-based layout. A User Info Card at the top shows the user's name, email, and phone number. A Role Badge displays the user's role (Student, Teacher, or Delivery Student) with appropriate color coding. For users with delivery mode enabled, a Delivery Stats section displays the total number of completed deliveries and total earnings formatted in rupees. The page provides a read-only summary of the user's profile data loaded from the Auth Provider and Firestore user document.

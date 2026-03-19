@@ -1,11 +1,14 @@
 import 'package:flutter/foundation.dart';
 import '../../../../config/constants/enum_values.dart';
+import '../../../../core/usecase/usecase.dart';
 import '../../../../core/utils/time_lock_helper.dart';
 import '../../../home/domain/entities/break_slot_entity.dart';
 import '../../../home/domain/entities/recent_order_entity.dart';
 import '../../../home/domain/entities/settings_entity.dart';
 import '../../../menu/presentation/providers/cart_provider.dart';
+import '../../../delivery/domain/usecases/check_delivery_availability_usecase.dart';
 import '../../domain/usecases/create_order_usecase.dart';
+import '../../domain/usecases/get_active_order_count_usecase.dart';
 import '../../domain/usecases/get_order_detail_usecase.dart';
 import '../../domain/usecases/get_order_history_usecase.dart';
 
@@ -14,11 +17,15 @@ class OrderProvider with ChangeNotifier {
   final CreateOrderUseCase createOrderUseCase;
   final GetOrderHistoryUseCase getOrderHistoryUseCase;
   final GetOrderDetailUseCase getOrderDetailUseCase;
+  final GetActiveOrderCountUseCase getActiveOrderCountUseCase;
+  final CheckDeliveryAvailabilityUseCase checkDeliveryAvailabilityUseCase;
 
   OrderProvider({
     required this.createOrderUseCase,
     required this.getOrderHistoryUseCase,
     required this.getOrderDetailUseCase,
+    required this.getActiveOrderCountUseCase,
+    required this.checkDeliveryAvailabilityUseCase,
   });
 
   // Checkout state
@@ -39,6 +46,16 @@ class OrderProvider with ChangeNotifier {
   bool _isLoadingDetail = false;
   String? _detailError;
 
+  // Delivery "now" availability state
+  bool _isDeliveryNowAvailable = false;
+  bool _isCheckingAvailability = false;
+  bool _isNowSlotSelected = false;
+
+  // Active order count state
+  int _activeOrderCount = 0;
+  bool _isLoadingActiveCount = false;
+  String? _activeCountError;
+
   // Checkout getters
   FulfillmentType get fulfillmentType => _fulfillmentType;
   BreakSlotEntity? get selectedBreakSlot => _selectedBreakSlot;
@@ -50,6 +67,11 @@ class OrderProvider with ChangeNotifier {
   double get deliveryFee =>
       _fulfillmentType == FulfillmentType.delivery ? 10.0 : 0.0;
 
+  // Delivery "now" getters
+  bool get isDeliveryNowAvailable => _isDeliveryNowAvailable;
+  bool get isCheckingAvailability => _isCheckingAvailability;
+  bool get isNowSlotSelected => _isNowSlotSelected;
+
   // Order history getters
   List<RecentOrderEntity> get orders => _orders;
   bool get isLoadingHistory => _isLoadingHistory;
@@ -60,12 +82,22 @@ class OrderProvider with ChangeNotifier {
   bool get isLoadingDetail => _isLoadingDetail;
   String? get detailError => _detailError;
 
+  // Active order count getters
+  int get activeOrderCount => _activeOrderCount;
+  bool get isLoadingActiveCount => _isLoadingActiveCount;
+  String? get activeCountError => _activeCountError;
+  int _maxOrders = 0;
+  bool get isAtCapacity => _activeOrderCount >= _maxOrders && _maxOrders > 0;
+
   /// Set the fulfillment type (pickup or delivery)
   void setFulfillmentType(FulfillmentType type) {
     _fulfillmentType = type;
     if (type == FulfillmentType.pickup) {
       _selectedBreakSlot = null;
       _fulfillmentSlot = null;
+      _isNowSlotSelected = false;
+    } else if (type == FulfillmentType.delivery) {
+      checkDeliveryAvailability();
     }
     notifyListeners();
   }
@@ -73,6 +105,7 @@ class OrderProvider with ChangeNotifier {
   /// Select a break slot for delivery
   void selectBreakSlot(BreakSlotEntity slot) {
     _selectedBreakSlot = slot;
+    _isNowSlotSelected = false;
     // Use the slot's start time as the fulfillment slot
     final now = DateTime.now();
     _fulfillmentSlot = DateTime(
@@ -82,6 +115,30 @@ class OrderProvider with ChangeNotifier {
       slot.startTime.hour,
       slot.startTime.minute,
     );
+    notifyListeners();
+  }
+
+  /// Select the "Deliver Now" slot (~10 min from now)
+  void selectNowSlot() {
+    _isNowSlotSelected = true;
+    _selectedBreakSlot = null;
+    _fulfillmentSlot = DateTime.now().add(const Duration(minutes: 10));
+    notifyListeners();
+  }
+
+  /// Check if any delivery student is currently available
+  Future<void> checkDeliveryAvailability() async {
+    _isCheckingAvailability = true;
+    notifyListeners();
+
+    try {
+      _isDeliveryNowAvailable =
+          await checkDeliveryAvailabilityUseCase(NoParams());
+    } catch (_) {
+      _isDeliveryNowAvailable = false;
+    }
+
+    _isCheckingAvailability = false;
     notifyListeners();
   }
 
@@ -118,7 +175,7 @@ class OrderProvider with ChangeNotifier {
     if (cart.isEmpty) return 'Cart is empty';
 
     if (_fulfillmentType == FulfillmentType.delivery) {
-      if (_selectedBreakSlot == null) {
+      if (_selectedBreakSlot == null && !_isNowSlotSelected) {
         return 'Please select a delivery time slot';
       }
       if (_fulfillmentSlot == null) {
@@ -178,6 +235,7 @@ class OrderProvider with ChangeNotifier {
       _fulfillmentType = FulfillmentType.pickup;
       _selectedBreakSlot = null;
       _fulfillmentSlot = null;
+      _isNowSlotSelected = false;
 
       notifyListeners();
       return true;
@@ -223,6 +281,26 @@ class OrderProvider with ChangeNotifier {
     } catch (e) {
       _isLoadingDetail = false;
       _detailError = 'Failed to load order details';
+      notifyListeners();
+    }
+  }
+
+  /// Fetch active order count for a canteen
+  Future<void> fetchActiveOrderCount(String canteenId, {int maxOrders = 0}) async {
+    _isLoadingActiveCount = true;
+    _activeCountError = null;
+    _maxOrders = maxOrders;
+    notifyListeners();
+
+    try {
+      _activeOrderCount = await getActiveOrderCountUseCase(
+        GetActiveOrderCountParams(canteenId: canteenId),
+      );
+      _isLoadingActiveCount = false;
+      notifyListeners();
+    } catch (e) {
+      _isLoadingActiveCount = false;
+      _activeCountError = 'Failed to load active order count';
       notifyListeners();
     }
   }
