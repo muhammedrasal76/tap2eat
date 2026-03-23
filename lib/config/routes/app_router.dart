@@ -13,6 +13,7 @@ import '../../features/order/presentation/pages/order_detail_page.dart';
 import '../../features/order/presentation/pages/order_history_page.dart';
 import '../../features/delivery/presentation/pages/delivery_home_page.dart';
 import '../../features/delivery/presentation/pages/delivery_tracking_page.dart';
+import '../../features/home/domain/entities/recent_order_entity.dart';
 import 'route_names.dart';
 
 /// App router configuration using GoRouter
@@ -116,7 +117,8 @@ class AppRouter {
         name: 'delivery-tracking',
         builder: (context, state) {
           final orderId = state.pathParameters['orderId']!;
-          return DeliveryTrackingPage(orderId: orderId);
+          final historyOrder = state.extra as RecentOrderEntity?;
+          return DeliveryTrackingPage(orderId: orderId, historyOrder: historyOrder);
         },
       ),
 

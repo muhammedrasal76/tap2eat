@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../../../../config/constants/enum_values.dart';
 import '../../../home/domain/entities/recent_order_entity.dart';
+import '../../domain/entities/customer_info_entity.dart';
 import '../../domain/entities/delivery_assignment_entity.dart';
 import '../../domain/usecases/accept_assignment_usecase.dart';
 import '../../domain/usecases/get_delivery_history_usecase.dart';
@@ -36,6 +37,10 @@ class DeliveryProvider with ChangeNotifier {
   RecentOrderEntity? _activeOrder;
   StreamSubscription? _orderSubscription;
 
+  // Customer info for current active delivery
+  CustomerInfoEntity? _customerInfo;
+  bool _customerInfoFetched = false;
+
   // Pending assignment state
   DeliveryAssignmentEntity? _pendingAssignment;
 
@@ -64,6 +69,7 @@ class DeliveryProvider with ChangeNotifier {
   bool get isRejecting => _isRejecting;
   String? get error => _error;
   bool get hasActiveDelivery => _activeOrderId != null;
+  CustomerInfoEntity? get customerInfo => _customerInfo;
 
   Future<void> toggleOnlineStatus(String userId) async {
     _isTogglingStatus = true;
@@ -86,20 +92,46 @@ class DeliveryProvider with ChangeNotifier {
     }
   }
 
-  void setPendingAssignment(Map<String, dynamic> data) {
+  Future<void> setPendingAssignment(Map<String, dynamic> data) async {
+    // Accept both camelCase (new CF) and snake_case (old CF) for compatibility
+    final orderId = data['orderId'] as String? ?? data['order_id'] as String? ?? '';
+    final assignmentId = data['assignmentId'] as String? ?? data['assignment_id'] as String? ?? '';
     final expiresAtMs = int.tryParse(data['expiresAt']?.toString() ?? '');
+    final expiresAt = expiresAtMs != null
+        ? DateTime.fromMillisecondsSinceEpoch(expiresAtMs)
+        : DateTime.now().add(const Duration(seconds: 60));
+
+    // Show popup immediately with whatever the FCM payload has
     _pendingAssignment = DeliveryAssignmentEntity(
-      assignmentId: data['assignmentId'] as String? ?? '',
-      orderId: data['orderId'] as String? ?? '',
-      canteenName: data['canteenName'] as String? ?? 'Unknown',
+      assignmentId: assignmentId,
+      orderId: orderId,
+      canteenName: data['canteenName'] as String? ?? 'Loading...',
       totalAmount: double.tryParse(data['totalAmount']?.toString() ?? '0') ?? 0,
       deliveryFee: double.tryParse(data['deliveryFee']?.toString() ?? '0') ?? 0,
       itemCount: int.tryParse(data['itemCount']?.toString() ?? '0') ?? 0,
-      expiresAt: expiresAtMs != null
-          ? DateTime.fromMillisecondsSinceEpoch(expiresAtMs)
-          : DateTime.now().add(const Duration(seconds: 60)),
+      expiresAt: expiresAt,
     );
     notifyListeners();
+
+    // Fetch accurate data from Firestore (handles old orders without canteen_name)
+    if (orderId.isNotEmpty) {
+      try {
+        final order = await repository.watchOrder(orderId).first;
+        if (_pendingAssignment == null) return; // cleared while fetching (reject/timeout)
+        _pendingAssignment = DeliveryAssignmentEntity(
+          assignmentId: assignmentId,
+          orderId: orderId,
+          canteenName: order.canteenName.isNotEmpty ? order.canteenName : (_pendingAssignment!.canteenName),
+          totalAmount: order.totalAmount,
+          deliveryFee: order.deliveryFee,
+          itemCount: order.items.length,
+          expiresAt: expiresAt,
+        );
+        notifyListeners();
+      } catch (_) {
+        // Keep FCM data if fetch fails — popup is already visible
+      }
+    }
   }
 
   void clearPendingAssignment() {
@@ -171,12 +203,13 @@ class DeliveryProvider with ChangeNotifier {
         status: status,
       ));
 
-      // If delivered, clear active order
+      // If delivered, mark as no longer active.
+      // Do NOT clear _activeOrder or cancel the subscription here —
+      // the watchActiveOrder stream handler will receive the 'delivered'
+      // Firestore event and clean up, keeping _activeOrder intact so the
+      // tracking page doesn't flash a spinner before the completion popup shows.
       if (status == 'delivered') {
         _activeOrderId = null;
-        _activeOrder = null;
-        _orderSubscription?.cancel();
-        _orderSubscription = null;
       }
 
       notifyListeners();
@@ -191,10 +224,21 @@ class DeliveryProvider with ChangeNotifier {
   void watchActiveOrder(String orderId) {
     _orderSubscription?.cancel();
     _activeOrderId = orderId;
+    _customerInfo = null;
+    _customerInfoFetched = false;
 
     _orderSubscription = repository.watchOrder(orderId).listen(
       (order) {
         _activeOrder = order;
+
+        // Fetch customer info once when we first get the order
+        if (!_customerInfoFetched && order.userId.isNotEmpty) {
+          _customerInfoFetched = true;
+          repository.getCustomerInfo(order.userId).then((info) {
+            _customerInfo = info;
+            notifyListeners();
+          });
+        }
 
         // If order was cancelled or delivered, stop watching but keep the
         // order data so the UI can display the final state.

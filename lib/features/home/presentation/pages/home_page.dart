@@ -117,25 +117,7 @@ class _HomePageState extends State<HomePage> {
           },
         ),
       ),
-      floatingActionButton: _currentIndex == 0
-          ? Consumer2<AuthProvider, HomeProvider>(
-              builder: (context, authProvider, homeProvider, _) {
-                final shouldShow = homeProvider.shouldShowGoOnlineButton(
-                  authProvider.userRole,
-                );
-
-                if (!shouldShow) return const SizedBox.shrink();
-
-                return GoOnlineButton(
-                  onPressed: () {
-                    // TODO: Navigate to delivery student "Go Online" screen
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Going online...')));
-                  },
-                );
-              },
-            )
-          : null,
+ 
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       bottomNavigationBar: _buildBottomNavBar(),
     );

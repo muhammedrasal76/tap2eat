@@ -1,4 +1,5 @@
 import '../../../home/domain/entities/recent_order_entity.dart';
+import '../entities/customer_info_entity.dart';
 
 abstract class DeliveryRepository {
   Future<void> updateOnlineStatus({
@@ -27,4 +28,6 @@ abstract class DeliveryRepository {
   Future<List<RecentOrderEntity>> getDeliveryHistory(String userId);
 
   Future<bool> hasAvailableDeliveryStudent();
+
+  Future<CustomerInfoEntity?> getCustomerInfo(String userId);
 }

@@ -1,4 +1,5 @@
 import '../../../home/domain/entities/recent_order_entity.dart';
+import '../../domain/entities/customer_info_entity.dart';
 import '../../domain/repositories/delivery_repository.dart';
 import '../datasources/delivery_remote_datasource.dart';
 
@@ -90,4 +91,8 @@ class DeliveryRepositoryImpl implements DeliveryRepository {
   Future<bool> hasAvailableDeliveryStudent() async {
     return await remoteDataSource.hasAvailableDeliveryStudent();
   }
+
+  @override
+  Future<CustomerInfoEntity?> getCustomerInfo(String userId) =>
+      remoteDataSource.getCustomerInfo(userId);
 }

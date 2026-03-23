@@ -219,7 +219,7 @@ class _DeliveryHomePageState extends State<DeliveryHomePage> {
                       child: DeliveryOrderCard(
                         order: order,
                         onTap: () {
-                          context.push('/delivery/${order.id}');
+                          context.push('/delivery/${order.id}', extra: order);
                         },
                       ),
                     ),

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import '../../../../config/constants/firebase_constants.dart';
 import '../../../home/data/models/recent_order_model.dart';
+import '../../domain/entities/customer_info_entity.dart';
 
 abstract class DeliveryRemoteDataSource {
   Future<void> updateOnlineStatus({
@@ -30,6 +31,8 @@ abstract class DeliveryRemoteDataSource {
   Future<List<RecentOrderModel>> getDeliveryHistory(String userId);
 
   Future<bool> hasAvailableDeliveryStudent();
+
+  Future<CustomerInfoEntity?> getCustomerInfo(String userId);
 }
 
 class DeliveryRemoteDataSourceImpl implements DeliveryRemoteDataSource {
@@ -50,10 +53,10 @@ class DeliveryRemoteDataSourceImpl implements DeliveryRemoteDataSource {
       await firestore
           .collection(FirebaseConstants.deliveryProfilesCollection)
           .doc(userId)
-          .update({
+          .set({
         'is_online': isOnline,
         'online_since': isOnline ? FieldValue.serverTimestamp() : null,
-      });
+      }, SetOptions(merge: true));
     } catch (e) {
       throw Exception('Failed to update online status: $e');
     }
@@ -183,6 +186,26 @@ class DeliveryRemoteDataSourceImpl implements DeliveryRemoteDataSource {
       return snapshot.docs.isNotEmpty;
     } catch (e) {
       return false;
+    }
+  }
+
+  @override
+  Future<CustomerInfoEntity?> getCustomerInfo(String userId) async {
+    try {
+      final doc = await firestore
+          .collection(FirebaseConstants.usersCollection)
+          .doc(userId)
+          .get();
+      if (!doc.exists) return null;
+      final d = doc.data()!;
+      return CustomerInfoEntity(
+        name: d[FirebaseConstants.userName] as String? ?? '',
+        phoneNumber: d['phone_number'] as String? ?? '',
+        classroomNumber: d['classroom_number'] as String? ?? '',
+        blockName: d['block_name'] as String? ?? '',
+      );
+    } catch (_) {
+      return null;
     }
   }
 }
