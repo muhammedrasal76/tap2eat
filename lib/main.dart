@@ -23,6 +23,7 @@ import 'features/home/domain/usecases/get_canteens_usecase.dart';
 import 'features/home/domain/usecases/get_recent_orders_usecase.dart';
 import 'features/home/domain/usecases/get_settings_usecase.dart';
 import 'features/home/domain/usecases/search_canteens_usecase.dart';
+import 'features/home/domain/usecases/watch_recent_orders_usecase.dart';
 import 'features/home/presentation/providers/home_provider.dart';
 import 'features/menu/presentation/providers/cart_provider.dart';
 import 'features/order/data/datasources/order_remote_datasource.dart';
@@ -31,6 +32,8 @@ import 'features/order/domain/usecases/create_order_usecase.dart';
 import 'features/order/domain/usecases/get_active_order_count_usecase.dart';
 import 'features/order/domain/usecases/get_order_detail_usecase.dart';
 import 'features/order/domain/usecases/get_order_history_usecase.dart';
+import 'features/order/domain/usecases/watch_order_history_usecase.dart';
+import 'features/order/domain/usecases/watch_order_detail_usecase.dart';
 import 'features/order/presentation/providers/order_provider.dart';
 import 'shared/providers/firebase_provider.dart';
 
@@ -84,6 +87,8 @@ class MyApp extends StatelessWidget {
                 GetRecentOrdersUseCase(homeRepository);
             final getSettingsUseCase = GetSettingsUseCase(homeRepository);
             final searchCanteensUseCase = SearchCanteensUseCase(homeRepository);
+            final watchRecentOrdersUseCase =
+                WatchRecentOrdersUseCase(homeRepository);
 
             // Create provider
             return HomeProvider(
@@ -91,6 +96,7 @@ class MyApp extends StatelessWidget {
               getRecentOrdersUseCase: getRecentOrdersUseCase,
               getSettingsUseCase: getSettingsUseCase,
               searchCanteensUseCase: searchCanteensUseCase,
+              watchRecentOrdersUseCase: watchRecentOrdersUseCase,
             );
           },
         ),
@@ -122,6 +128,9 @@ class MyApp extends StatelessWidget {
                   GetActiveOrderCountUseCase(orderRepository),
               checkDeliveryAvailabilityUseCase:
                   CheckDeliveryAvailabilityUseCase(deliveryRepository),
+              watchOrderHistoryUseCase:
+                  WatchOrderHistoryUseCase(orderRepository),
+              watchOrderDetailUseCase: WatchOrderDetailUseCase(orderRepository),
             );
           },
         ),

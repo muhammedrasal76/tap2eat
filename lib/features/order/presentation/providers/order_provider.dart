@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../../../../config/constants/enum_values.dart';
 import '../../../../core/usecase/usecase.dart';
@@ -11,6 +12,8 @@ import '../../domain/usecases/create_order_usecase.dart';
 import '../../domain/usecases/get_active_order_count_usecase.dart';
 import '../../domain/usecases/get_order_detail_usecase.dart';
 import '../../domain/usecases/get_order_history_usecase.dart';
+import '../../domain/usecases/watch_order_history_usecase.dart';
+import '../../domain/usecases/watch_order_detail_usecase.dart';
 
 /// Order state management provider
 class OrderProvider with ChangeNotifier {
@@ -19,6 +22,8 @@ class OrderProvider with ChangeNotifier {
   final GetOrderDetailUseCase getOrderDetailUseCase;
   final GetActiveOrderCountUseCase getActiveOrderCountUseCase;
   final CheckDeliveryAvailabilityUseCase checkDeliveryAvailabilityUseCase;
+  final WatchOrderHistoryUseCase watchOrderHistoryUseCase;
+  final WatchOrderDetailUseCase watchOrderDetailUseCase;
 
   OrderProvider({
     required this.createOrderUseCase,
@@ -26,6 +31,8 @@ class OrderProvider with ChangeNotifier {
     required this.getOrderDetailUseCase,
     required this.getActiveOrderCountUseCase,
     required this.checkDeliveryAvailabilityUseCase,
+    required this.watchOrderHistoryUseCase,
+    required this.watchOrderDetailUseCase,
   });
 
   // Checkout state
@@ -55,6 +62,11 @@ class OrderProvider with ChangeNotifier {
   int _activeOrderCount = 0;
   bool _isLoadingActiveCount = false;
   String? _activeCountError;
+
+  // Stream subscriptions
+  StreamSubscription<List<RecentOrderEntity>>? _orderHistorySubscription;
+  StreamSubscription<RecentOrderEntity?>? _orderDetailSubscription;
+  String? _historyUserId;
 
   // Checkout getters
   FulfillmentType get fulfillmentType => _fulfillmentType;
@@ -247,42 +259,63 @@ class OrderProvider with ChangeNotifier {
     }
   }
 
-  /// Fetch order history for a user
-  Future<void> fetchOrderHistory(String userId) async {
+  /// Subscribe to real-time order history for a user.
+  /// Idempotent — skips re-subscribing if already listening to the same userId.
+  void fetchOrderHistory(String userId) {
+    if (_historyUserId == userId && _orderHistorySubscription != null) return;
+    _historyUserId = userId;
+    _orderHistorySubscription?.cancel();
     _isLoadingHistory = true;
     _historyError = null;
     notifyListeners();
 
-    try {
-      _orders = await getOrderHistoryUseCase(
-        GetOrderHistoryParams(userId: userId),
-      );
-      _isLoadingHistory = false;
-      notifyListeners();
-    } catch (e) {
-      _isLoadingHistory = false;
-      _historyError = 'Failed to load orders';
-      notifyListeners();
-    }
+    _orderHistorySubscription = watchOrderHistoryUseCase(
+      WatchOrderHistoryParams(userId: userId),
+    ).listen(
+      (orders) {
+        _orders = orders;
+        _isLoadingHistory = false;
+        _historyError = null;
+        notifyListeners();
+      },
+      onError: (e) {
+        _orderHistorySubscription = null;
+        _historyUserId = null;
+        _isLoadingHistory = false;
+        _historyError = 'Failed to load orders';
+        notifyListeners();
+      },
+    );
   }
 
-  /// Fetch a single order detail
-  Future<void> fetchOrderDetail(String orderId) async {
+  /// Subscribe to real-time updates for a single order.
+  void fetchOrderDetail(String orderId) {
+    _orderDetailSubscription?.cancel();
     _isLoadingDetail = true;
     _detailError = null;
     notifyListeners();
 
-    try {
-      _orderDetail = await getOrderDetailUseCase(
-        GetOrderDetailParams(orderId: orderId),
-      );
-      _isLoadingDetail = false;
-      notifyListeners();
-    } catch (e) {
-      _isLoadingDetail = false;
-      _detailError = 'Failed to load order details';
-      notifyListeners();
-    }
+    _orderDetailSubscription = watchOrderDetailUseCase(
+      WatchOrderDetailParams(orderId: orderId),
+    ).listen(
+      (detail) {
+        _orderDetail = detail;
+        _isLoadingDetail = false;
+        _detailError = null;
+        notifyListeners();
+      },
+      onError: (e) {
+        _isLoadingDetail = false;
+        _detailError = 'Failed to load order details';
+        notifyListeners();
+      },
+    );
+  }
+
+  /// Cancel the order detail subscription (call from page dispose).
+  void cancelOrderDetailSubscription() {
+    _orderDetailSubscription?.cancel();
+    _orderDetailSubscription = null;
   }
 
   /// Fetch active order count for a canteen
@@ -309,5 +342,12 @@ class OrderProvider with ChangeNotifier {
   void clearCheckoutError() {
     _checkoutError = null;
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _orderHistorySubscription?.cancel();
+    _orderDetailSubscription?.cancel();
+    super.dispose();
   }
 }

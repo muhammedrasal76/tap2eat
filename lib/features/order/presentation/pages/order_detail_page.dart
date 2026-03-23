@@ -29,6 +29,12 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   }
 
   @override
+  void dispose() {
+    context.read<OrderProvider>().cancelOrderDetailSubscription();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.base,

@@ -21,6 +21,7 @@ class FirebaseConstants {
 
   // Order document fields (D2)
   static const String orderCanteenId = 'canteen_id';
+  static const String orderCanteenName = 'canteen_name';
   static const String orderUserId = 'user_id';
   static const String orderItems = 'items';
   static const String orderTotalAmount = 'total_amount';

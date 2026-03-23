@@ -8,6 +8,8 @@ abstract class OrderRemoteDataSource {
   Future<List<RecentOrderModel>> getOrderHistory(String userId);
   Future<RecentOrderModel> getOrderDetail(String orderId);
   Future<int> getActiveOrderCount(String canteenId);
+  Stream<List<RecentOrderModel>> watchOrderHistory(String userId);
+  Stream<RecentOrderModel?> watchOrderDetail(String orderId);
 }
 
 class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
@@ -107,5 +109,36 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
     } catch (e) {
       throw Exception('Failed to fetch active order count: $e');
     }
+  }
+
+  @override
+  Stream<List<RecentOrderModel>> watchOrderHistory(String userId) {
+    return firestore
+        .collection(FirebaseConstants.ordersCollection)
+        .where(FirebaseConstants.orderUserId, isEqualTo: userId)
+        .snapshots()
+        .map((snapshot) {
+          final orders = snapshot.docs.map((doc) {
+            final data = Map<String, dynamic>.from(doc.data());
+            data['id'] = doc.id;
+            return RecentOrderModel.fromJson(data);
+          }).toList();
+          orders.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          return orders;
+        });
+  }
+
+  @override
+  Stream<RecentOrderModel?> watchOrderDetail(String orderId) {
+    return firestore
+        .collection(FirebaseConstants.ordersCollection)
+        .doc(orderId)
+        .snapshots()
+        .map((doc) {
+          if (!doc.exists) return null;
+          final data = Map<String, dynamic>.from(doc.data()!);
+          data['id'] = doc.id;
+          return RecentOrderModel.fromJson(data);
+        });
   }
 }

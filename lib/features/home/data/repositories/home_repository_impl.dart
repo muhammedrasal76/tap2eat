@@ -49,4 +49,11 @@ class HomeRepositoryImpl implements HomeRepository {
       throw Exception('Repository: Failed to search canteens - $e');
     }
   }
+
+  @override
+  Stream<List<RecentOrderEntity>> watchRecentOrders(String userId) {
+    return remoteDataSource
+        .watchRecentOrders(userId)
+        .map((models) => models.map((m) => m.toEntity()).toList());
+  }
 }

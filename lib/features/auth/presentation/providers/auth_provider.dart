@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../config/constants/enum_values.dart';
 import '../../../../core/services/notification_service.dart';
@@ -50,6 +51,7 @@ class AuthProvider with ChangeNotifier {
       } catch (_) {
         // FCM token may not be available (e.g. iOS simulator without APNs)
       }
+      NotificationService.instance.setCurrentUserId(_firebaseUser!.uid);
 
       _isLoading = false;
       notifyListeners();
@@ -117,6 +119,7 @@ class AuthProvider with ChangeNotifier {
       // 3. Update local state
       _firebaseUser = userCredential.user;
       _userRole = role;
+      NotificationService.instance.setCurrentUserId(userCredential.user!.uid);
 
       _isLoading = false;
       notifyListeners();
@@ -136,6 +139,21 @@ class AuthProvider with ChangeNotifier {
     try {
       _isLoading = true;
       notifyListeners();
+
+      // Remove FCM token from Firestore before signing out (spec step 6)
+      if (_firebaseUser != null) {
+        try {
+          final token = await FirebaseMessaging.instance.getToken();
+          if (token != null) {
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(_firebaseUser!.uid)
+                .update({'fcm_tokens': FieldValue.arrayRemove([token])});
+          }
+          await FirebaseMessaging.instance.deleteToken();
+        } catch (_) {}
+      }
+      NotificationService.instance.setCurrentUserId(null);
 
       await firebase_auth.FirebaseAuth.instance.signOut();
 
@@ -164,6 +182,7 @@ class AuthProvider with ChangeNotifier {
         _firebaseUser = currentUser;
         await _fetchUserRole();
         await _ensureFcmToken();
+        NotificationService.instance.setCurrentUserId(currentUser.uid);
       }
 
       _isLoading = false;

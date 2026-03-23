@@ -22,4 +22,10 @@ abstract class OrderRepository {
 
   /// Get count of active orders for a canteen
   Future<int> getActiveOrderCount(String canteenId);
+
+  /// Stream all orders for a user, updating in real time
+  Stream<List<RecentOrderEntity>> watchOrderHistory(String userId);
+
+  /// Stream a single order document, updating in real time
+  Stream<RecentOrderEntity?> watchOrderDetail(String orderId);
 }

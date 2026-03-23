@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../../../../config/constants/enum_values.dart';
 import '../../../../core/usecase/usecase.dart';
@@ -11,6 +12,7 @@ import '../../domain/usecases/get_canteens_usecase.dart';
 import '../../domain/usecases/get_recent_orders_usecase.dart';
 import '../../domain/usecases/get_settings_usecase.dart';
 import '../../domain/usecases/search_canteens_usecase.dart';
+import '../../domain/usecases/watch_recent_orders_usecase.dart';
 
 /// Home screen state management provider
 class HomeProvider with ChangeNotifier {
@@ -18,6 +20,7 @@ class HomeProvider with ChangeNotifier {
   final GetRecentOrdersUseCase getRecentOrdersUseCase;
   final GetSettingsUseCase getSettingsUseCase;
   final SearchCanteensUseCase searchCanteensUseCase;
+  final WatchRecentOrdersUseCase watchRecentOrdersUseCase;
 
   // Dummy data flag - set to false when Firebase is ready
   static const bool _useDummyData = false;
@@ -27,6 +30,7 @@ class HomeProvider with ChangeNotifier {
     required this.getRecentOrdersUseCase,
     required this.getSettingsUseCase,
     required this.searchCanteensUseCase,
+    required this.watchRecentOrdersUseCase,
   });
 
   // State
@@ -37,6 +41,9 @@ class HomeProvider with ChangeNotifier {
   bool _isLoading = false;
   bool _isSearching = false;
   String? _errorMessage;
+
+  // Stream subscriptions
+  StreamSubscription<List<RecentOrderEntity>>? _recentOrdersSubscription;
 
   // Getters
   List<CanteenEntity> get canteens => _canteens;
@@ -72,12 +79,12 @@ class HomeProvider with ChangeNotifier {
         _recentOrders = _getDummyRecentOrders();
         _settings = _getDummySettings();
       } else {
-        // Fetch all data in parallel from Firebase
+        // Fetch canteens and settings in parallel; recent orders via real-time stream
         await Future.wait([
           _fetchCanteens(),
-          _fetchRecentOrders(userId),
           _fetchSettings(),
         ]);
+        _subscribeToRecentOrders(userId);
       }
 
       _isLoading = false;
@@ -99,17 +106,20 @@ class HomeProvider with ChangeNotifier {
     }
   }
 
-  /// Fetch recent orders
-  Future<void> _fetchRecentOrders(String userId) async {
-    try {
-      _recentOrders = await getRecentOrdersUseCase(
-        GetRecentOrdersParams(userId: userId),
-      );
-    } catch (e) {
-      // Don't throw - recent orders are optional
-      _recentOrders = [];
-      debugPrint('Failed to fetch recent orders: $e');
-    }
+  /// Subscribe to real-time recent orders stream.
+  void _subscribeToRecentOrders(String userId) {
+    _recentOrdersSubscription?.cancel();
+    _recentOrdersSubscription = watchRecentOrdersUseCase(
+      WatchRecentOrdersParams(userId: userId),
+    ).listen(
+      (orders) {
+        _recentOrders = orders;
+        notifyListeners();
+      },
+      onError: (e) {
+        debugPrint('Failed to watch recent orders: $e');
+      },
+    );
   }
 
   /// Fetch settings
@@ -177,6 +187,12 @@ class HomeProvider with ChangeNotifier {
   void clearError() {
     _errorMessage = null;
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _recentOrdersSubscription?.cancel();
+    super.dispose();
   }
 
   // ==================== Dummy Data Methods ====================

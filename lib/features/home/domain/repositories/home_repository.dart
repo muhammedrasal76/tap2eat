@@ -15,4 +15,7 @@ abstract class HomeRepository {
 
   /// Search for menu items or canteens by query
   Future<List<CanteenEntity>> searchCanteens(String query);
+
+  /// Stream recent orders for a user, updating in real time
+  Stream<List<RecentOrderEntity>> watchRecentOrders(String userId);
 }

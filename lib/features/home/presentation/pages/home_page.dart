@@ -350,7 +350,7 @@ class _HomePageState extends State<HomePage> {
                 radius: 40,
                 backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                 child: Text(
-                  (user?.displayName ?? 'U')[0].toUpperCase(),
+                  (user?.displayName?.isNotEmpty == true ? user!.displayName! : (user?.email?.isNotEmpty == true ? user!.email! : 'U'))[0].toUpperCase(),
                   style: AppTextStyles.h2.copyWith(color: AppColors.primary),
                 ),
               ),
@@ -574,12 +574,6 @@ class _HomePageState extends State<HomePage> {
         ],
         onTap: (index) {
           setState(() => _currentIndex = index);
-          if (index == 1) {
-            final userId = context.read<AuthProvider>().firebaseUser?.uid;
-            if (userId != null) {
-              context.read<OrderProvider>().fetchOrderHistory(userId);
-            }
-          }
         },
       ),
     );

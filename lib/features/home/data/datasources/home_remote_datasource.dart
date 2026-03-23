@@ -10,6 +10,7 @@ abstract class HomeRemoteDataSource {
   Future<List<RecentOrderModel>> getRecentOrders(String userId);
   Future<SettingsModel> getSettings();
   Future<List<CanteenModel>> searchCanteens(String query);
+  Stream<List<RecentOrderModel>> watchRecentOrders(String userId);
 }
 
 class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
@@ -148,5 +149,22 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
     } catch (e) {
       throw Exception('Failed to search canteens: $e');
     }
+  }
+
+  @override
+  Stream<List<RecentOrderModel>> watchRecentOrders(String userId) {
+    return firestore
+        .collection(FirebaseConstants.ordersCollection)
+        .where(FirebaseConstants.orderUserId, isEqualTo: userId)
+        .snapshots()
+        .map((snapshot) {
+          final orders = snapshot.docs.map((doc) {
+            final data = Map<String, dynamic>.from(doc.data());
+            data['id'] = doc.id;
+            return RecentOrderModel.fromJson(data);
+          }).toList();
+          orders.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          return orders.take(10).toList();
+        });
   }
 }

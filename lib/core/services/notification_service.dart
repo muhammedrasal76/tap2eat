@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -21,7 +22,12 @@ class NotificationService {
   void Function(Map<String, dynamic> data)? _deliveryAssignmentHandler;
   void Function(String route, {String? orderId})? _navigationHandler;
 
+  String? _currentUserId;
   bool _initialized = false;
+
+  void setCurrentUserId(String? userId) {
+    _currentUserId = userId;
+  }
 
   void setDeliveryAssignmentHandler(
       void Function(Map<String, dynamic> data)? handler) {
@@ -135,9 +141,12 @@ class NotificationService {
   }
 
   Future<void> _registerToken(String token) async {
-    // Token refresh — re-register if we have a stored userId
-    // This is called automatically; the provider should call registerCurrentToken
     debugPrint('FCM token refreshed: $token');
+    if (_currentUserId == null) return;
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(_currentUserId)
+        .update({'fcm_tokens': FieldValue.arrayUnion([token])});
   }
 
   Future<void> _registerTokenWithUserId(String token, String userId) async {
@@ -219,6 +228,8 @@ class NotificationService {
         return 'Order Delivered';
       case 'order_converted_to_pickup':
         return 'Order Converted to Pickup';
+      case 'order_ready':
+        return 'Order Ready';
       default:
         return 'Tap2Eat';
     }
@@ -234,6 +245,8 @@ class NotificationService {
         return 'Your order has been delivered!';
       case 'order_converted_to_pickup':
         return 'Your delivery order has been converted to pickup';
+      case 'order_ready':
+        return 'Your order is ready for pickup!';
       default:
         return 'You have a new notification';
     }

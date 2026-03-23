@@ -24,6 +24,7 @@ class OrderRepositoryImpl implements OrderRepository {
     try {
       final orderData = {
         FirebaseConstants.orderCanteenId: canteenId,
+        FirebaseConstants.orderCanteenName: canteenName,
         FirebaseConstants.orderUserId: userId,
         FirebaseConstants.orderItems: items
             .map((item) => {
@@ -76,5 +77,19 @@ class OrderRepositoryImpl implements OrderRepository {
     } catch (e) {
       throw Exception('Repository: Failed to get active order count - $e');
     }
+  }
+
+  @override
+  Stream<List<RecentOrderEntity>> watchOrderHistory(String userId) {
+    return remoteDataSource
+        .watchOrderHistory(userId)
+        .map((models) => models.map((m) => m.toEntity()).toList());
+  }
+
+  @override
+  Stream<RecentOrderEntity?> watchOrderDetail(String orderId) {
+    return remoteDataSource
+        .watchOrderDetail(orderId)
+        .map((model) => model?.toEntity());
   }
 }
