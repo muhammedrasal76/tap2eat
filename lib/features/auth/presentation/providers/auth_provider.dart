@@ -9,12 +9,14 @@ import '../../../../core/services/notification_service.dart';
 class AuthProvider with ChangeNotifier {
   firebase_auth.User? _firebaseUser;
   UserRole? _userRole;
+  String? _userName;
   bool _isLoading = false;
   String? _errorMessage;
 
   // Getters
   firebase_auth.User? get firebaseUser => _firebaseUser;
   UserRole? get userRole => _userRole;
+  String? get userName => _userName;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get isAuthenticated => _firebaseUser != null;
@@ -119,6 +121,7 @@ class AuthProvider with ChangeNotifier {
       // 3. Update local state
       _firebaseUser = userCredential.user;
       _userRole = role;
+      _userName = name;
       NotificationService.instance.setCurrentUserId(userCredential.user!.uid);
 
       _isLoading = false;
@@ -159,6 +162,7 @@ class AuthProvider with ChangeNotifier {
 
       _firebaseUser = null;
       _userRole = null;
+      _userName = null;
 
       _isLoading = false;
       notifyListeners();
@@ -212,6 +216,7 @@ class AuthProvider with ChangeNotifier {
 
       final roleString = doc.data()!['role'] as String;
       _userRole = UserRoleExtension.fromString(roleString);
+      _userName = doc.data()!['name'] as String?;
       notifyListeners();
     } catch (e) {
       _errorMessage = 'Failed to load user profile';

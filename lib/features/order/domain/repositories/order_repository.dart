@@ -28,4 +28,7 @@ abstract class OrderRepository {
 
   /// Stream a single order document, updating in real time
   Stream<RecentOrderEntity?> watchOrderDetail(String orderId);
+
+  /// Fetch name and phone of a delivery person from users collection
+  Future<Map<String, String>?> getDeliveryPersonInfo(String userId);
 }

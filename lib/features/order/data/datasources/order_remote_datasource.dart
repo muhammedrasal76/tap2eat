@@ -10,6 +10,7 @@ abstract class OrderRemoteDataSource {
   Future<int> getActiveOrderCount(String canteenId);
   Stream<List<RecentOrderModel>> watchOrderHistory(String userId);
   Stream<RecentOrderModel?> watchOrderDetail(String orderId);
+  Future<Map<String, String>?> getDeliveryPersonInfo(String userId);
 }
 
 class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
@@ -140,5 +141,23 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
           data['id'] = doc.id;
           return RecentOrderModel.fromJson(data);
         });
+  }
+
+  @override
+  Future<Map<String, String>?> getDeliveryPersonInfo(String userId) async {
+    try {
+      final doc = await firestore
+          .collection(FirebaseConstants.usersCollection)
+          .doc(userId)
+          .get();
+      if (!doc.exists) return null;
+      final d = doc.data()!;
+      return {
+        'name': d[FirebaseConstants.userName] as String? ?? '',
+        'phone': d['phone_number'] as String? ?? '',
+      };
+    } catch (_) {
+      return null;
+    }
   }
 }

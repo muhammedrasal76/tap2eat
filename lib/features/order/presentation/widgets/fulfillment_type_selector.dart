@@ -7,11 +7,13 @@ import '../../../../config/theme/text_styles.dart';
 class FulfillmentTypeSelector extends StatelessWidget {
   final FulfillmentType selected;
   final ValueChanged<FulfillmentType> onChanged;
+  final bool deliveryEnabled;
 
   const FulfillmentTypeSelector({
     super.key,
     required this.selected,
     required this.onChanged,
+    this.deliveryEnabled = true,
   });
 
   @override
@@ -43,36 +45,68 @@ class FulfillmentTypeSelector extends StatelessWidget {
     required FulfillmentType type,
   }) {
     final isSelected = selected == type;
+    final isDisabled = type == FulfillmentType.delivery && !deliveryEnabled;
+
     return GestureDetector(
-      onTap: () => onChanged(type),
+      onTap: isDisabled ? null : () => onChanged(type),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
         decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primary.withOpacity(0.1)
-              : AppColors.surface,
+          color: isDisabled
+              ? AppColors.surface
+              : isSelected
+                  ? AppColors.primary.withOpacity(0.1)
+                  : AppColors.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.borderColor,
-            width: isSelected ? 2 : 1,
+            color: isDisabled
+                ? AppColors.borderColor
+                : isSelected
+                    ? AppColors.primary
+                    : AppColors.borderColor,
+            width: isSelected && !isDisabled ? 2 : 1,
           ),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 20,
-              color: isSelected ? AppColors.primary : AppColors.textSecondary,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  icon,
+                  size: 20,
+                  color: isDisabled
+                      ? AppColors.textSecondary.withOpacity(0.4)
+                      : isSelected
+                          ? AppColors.primary
+                          : AppColors.textSecondary,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: AppTextStyles.label.copyWith(
+                    color: isDisabled
+                        ? AppColors.textSecondary.withOpacity(0.4)
+                        : isSelected
+                            ? AppColors.primary
+                            : AppColors.textSecondary,
+                    fontWeight:
+                        isSelected && !isDisabled ? FontWeight.w600 : FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: AppTextStyles.label.copyWith(
-                color: isSelected ? AppColors.primary : AppColors.textSecondary,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            if (isDisabled) ...[
+              const SizedBox(height: 2),
+              Text(
+                'Unavailable',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.textSecondary.withOpacity(0.4),
+                  fontSize: 10,
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),

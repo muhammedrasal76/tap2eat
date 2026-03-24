@@ -131,6 +131,7 @@ class MyApp extends StatelessWidget {
               watchOrderHistoryUseCase:
                   WatchOrderHistoryUseCase(orderRepository),
               watchOrderDetailUseCase: WatchOrderDetailUseCase(orderRepository),
+              repository: orderRepository,
             );
           },
         ),

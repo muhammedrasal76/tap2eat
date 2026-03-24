@@ -117,6 +117,13 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                               : Icons.storefront,
                         ),
 
+                        // Delivery person card (delivery orders with assigned student)
+                        if (detail.fulfillmentType == FulfillmentType.delivery &&
+                            detail.deliveryStudentId != null) ...[
+                          const SizedBox(height: 12),
+                          _buildDeliveryPersonCard(order.deliveryPersonInfo),
+                        ],
+
                         const SizedBox(height: 20),
 
                         // Items
@@ -202,6 +209,53 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           Text('Order Details', style: AppTextStyles.h3),
         ],
       ),
+    );
+  }
+
+  Widget _buildDeliveryPersonCard(Map<String, String>? info) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.borderColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.delivery_dining, size: 18, color: AppColors.primary),
+              const SizedBox(width: 8),
+              Text('Delivery By', style: AppTextStyles.label),
+            ],
+          ),
+          const SizedBox(height: 10),
+          if (info == null)
+            Text('Loading...', style: AppTextStyles.caption)
+          else ...[
+            _buildPersonRow('Name', info['name'] ?? '—'),
+            const SizedBox(height: 6),
+            _buildPersonRow('Phone', info['phone']?.isNotEmpty == true ? info['phone']! : '—'),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPersonRow(String label, String value) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 52,
+          child: Text(label,
+              style: AppTextStyles.caption.copyWith(
+                  color: AppColors.textSecondary)),
+        ),
+        Expanded(
+          child: Text(value, style: AppTextStyles.bodyMedium),
+        ),
+      ],
     );
   }
 

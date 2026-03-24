@@ -8,6 +8,7 @@ import '../../../home/domain/entities/recent_order_entity.dart';
 import '../../../home/domain/entities/settings_entity.dart';
 import '../../../menu/presentation/providers/cart_provider.dart';
 import '../../../delivery/domain/usecases/check_delivery_availability_usecase.dart';
+import '../../domain/repositories/order_repository.dart';
 import '../../domain/usecases/create_order_usecase.dart';
 import '../../domain/usecases/get_active_order_count_usecase.dart';
 import '../../domain/usecases/get_order_detail_usecase.dart';
@@ -24,6 +25,7 @@ class OrderProvider with ChangeNotifier {
   final CheckDeliveryAvailabilityUseCase checkDeliveryAvailabilityUseCase;
   final WatchOrderHistoryUseCase watchOrderHistoryUseCase;
   final WatchOrderDetailUseCase watchOrderDetailUseCase;
+  final OrderRepository repository;
 
   OrderProvider({
     required this.createOrderUseCase,
@@ -33,6 +35,7 @@ class OrderProvider with ChangeNotifier {
     required this.checkDeliveryAvailabilityUseCase,
     required this.watchOrderHistoryUseCase,
     required this.watchOrderDetailUseCase,
+    required this.repository,
   });
 
   // Checkout state
@@ -57,6 +60,10 @@ class OrderProvider with ChangeNotifier {
   bool _isDeliveryNowAvailable = false;
   bool _isCheckingAvailability = false;
   bool _isNowSlotSelected = false;
+
+  // Delivery person info state
+  Map<String, String>? _deliveryPersonInfo;
+  bool _deliveryPersonFetched = false;
 
   // Active order count state
   int _activeOrderCount = 0;
@@ -94,6 +101,9 @@ class OrderProvider with ChangeNotifier {
   bool get isLoadingDetail => _isLoadingDetail;
   String? get detailError => _detailError;
 
+  // Delivery person info getter
+  Map<String, String>? get deliveryPersonInfo => _deliveryPersonInfo;
+
   // Active order count getters
   int get activeOrderCount => _activeOrderCount;
   bool get isLoadingActiveCount => _isLoadingActiveCount;
@@ -103,6 +113,7 @@ class OrderProvider with ChangeNotifier {
 
   /// Set the fulfillment type (pickup or delivery)
   void setFulfillmentType(FulfillmentType type) {
+    if (type == FulfillmentType.delivery && !_isDeliveryNowAvailable) return;
     _fulfillmentType = type;
     if (type == FulfillmentType.pickup) {
       _selectedBreakSlot = null;
@@ -293,6 +304,8 @@ class OrderProvider with ChangeNotifier {
     _orderDetailSubscription?.cancel();
     _isLoadingDetail = true;
     _detailError = null;
+    _deliveryPersonInfo = null;
+    _deliveryPersonFetched = false;
     notifyListeners();
 
     _orderDetailSubscription = watchOrderDetailUseCase(
@@ -302,6 +315,21 @@ class OrderProvider with ChangeNotifier {
         _orderDetail = detail;
         _isLoadingDetail = false;
         _detailError = null;
+
+        // Fetch delivery person info once when student is assigned
+        if (!_deliveryPersonFetched &&
+            detail != null &&
+            detail.deliveryStudentId != null &&
+            detail.fulfillmentType == FulfillmentType.delivery) {
+          _deliveryPersonFetched = true;
+          repository
+              .getDeliveryPersonInfo(detail.deliveryStudentId!)
+              .then((info) {
+            _deliveryPersonInfo = info;
+            notifyListeners();
+          });
+        }
+
         notifyListeners();
       },
       onError: (e) {

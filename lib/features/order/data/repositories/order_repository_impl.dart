@@ -92,4 +92,8 @@ class OrderRepositoryImpl implements OrderRepository {
         .watchOrderDetail(orderId)
         .map((model) => model?.toEntity());
   }
+
+  @override
+  Future<Map<String, String>?> getDeliveryPersonInfo(String userId) =>
+      remoteDataSource.getDeliveryPersonInfo(userId);
 }

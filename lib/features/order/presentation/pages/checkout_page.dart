@@ -16,8 +16,24 @@ import '../widgets/fulfillment_type_selector.dart';
 import '../widgets/order_summary_card.dart';
 
 /// Checkout page for reviewing cart and placing an order
-class CheckoutPage extends StatelessWidget {
+class CheckoutPage extends StatefulWidget {
   const CheckoutPage({super.key});
+
+  @override
+  State<CheckoutPage> createState() => _CheckoutPageState();
+}
+
+class _CheckoutPageState extends State<CheckoutPage> {
+  @override
+  void initState() {
+    super.initState();
+    final role = context.read<AuthProvider>().userRole;
+    if (role == UserRole.teacher) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) context.read<OrderProvider>().checkDeliveryAvailability();
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -90,6 +106,7 @@ class CheckoutPage extends StatelessWidget {
                             selected: order.fulfillmentType,
                             onChanged: (type) =>
                                 order.setFulfillmentType(type),
+                            deliveryEnabled: order.isDeliveryNowAvailable,
                           ),
                         ],
 

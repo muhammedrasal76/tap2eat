@@ -140,7 +140,7 @@ class _HomePageState extends State<HomePage> {
             Text('Welcome back,', style: AppTextStyles.bodySmall),
             const SizedBox(height: 4),
             Text(
-              '${authProvider.firebaseUser?.displayName ?? ""}',
+              authProvider.userName ?? '',
               style: AppTextStyles.h3,
             ),
             const SizedBox(height: 16),
@@ -173,6 +173,7 @@ class _HomePageState extends State<HomePage> {
             SizedBox(
               height: 100,
               child: ListView.separated(
+                
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 scrollDirection: Axis.horizontal,
                 itemCount: homeProvider.recentOrders.length,
@@ -556,6 +557,12 @@ class _HomePageState extends State<HomePage> {
         ],
         onTap: (index) {
           setState(() => _currentIndex = index);
+          if (index == 1) {
+            final userId = context.read<AuthProvider>().firebaseUser?.uid;
+            if (userId != null) {
+              context.read<OrderProvider>().fetchOrderHistory(userId);
+            }
+          }
         },
       ),
     );
