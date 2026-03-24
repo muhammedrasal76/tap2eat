@@ -20,6 +20,7 @@ class OrderRepositoryImpl implements OrderRepository {
     required DateTime fulfillmentSlot,
     required String fulfillmentType,
     required double deliveryFee,
+    String? deliveryAddress,
   }) async {
     try {
       final orderData = {
@@ -40,6 +41,7 @@ class OrderRepositoryImpl implements OrderRepository {
         FirebaseConstants.orderFulfillmentType: fulfillmentType,
         FirebaseConstants.orderStatus: 'pending',
         FirebaseConstants.orderDeliveryFee: deliveryFee,
+        if (deliveryAddress != null) 'delivery_address': deliveryAddress,
         FirebaseConstants.orderCreatedAt: FieldValue.serverTimestamp(),
         FirebaseConstants.orderUpdatedAt: FieldValue.serverTimestamp(),
       };

@@ -12,6 +12,7 @@ abstract class OrderRepository {
     required DateTime fulfillmentSlot,
     required String fulfillmentType,
     required double deliveryFee,
+    String? deliveryAddress,
   });
 
   /// Fetch all orders for a user, ordered by most recent

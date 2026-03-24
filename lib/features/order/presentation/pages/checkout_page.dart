@@ -24,15 +24,41 @@ class CheckoutPage extends StatefulWidget {
 }
 
 class _CheckoutPageState extends State<CheckoutPage> {
+  final TextEditingController _blockController = TextEditingController();
+  final TextEditingController _roomController = TextEditingController();
+
+  void _updateDeliveryAddress() {
+    final block = _blockController.text.trim();
+    final room = _roomController.text.trim();
+    final parts = [if (room.isNotEmpty) room, if (block.isNotEmpty) block];
+    context.read<OrderProvider>().setDeliveryAddress(parts.join(', '));
+  }
+
   @override
   void initState() {
     super.initState();
-    final role = context.read<AuthProvider>().userRole;
-    if (role == UserRole.teacher) {
+    final auth = context.read<AuthProvider>();
+    if (auth.userRole == UserRole.teacher) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) context.read<OrderProvider>().checkDeliveryAvailability();
+        if (!mounted) return;
+        context.read<OrderProvider>().checkDeliveryAvailability();
+        // Pre-fill delivery address fields from teacher's profile
+        if ((auth.classroomNumber ?? '').isNotEmpty) {
+          _roomController.text = auth.classroomNumber!;
+        }
+        if ((auth.blockName ?? '').isNotEmpty) {
+          _blockController.text = auth.blockName!;
+        }
+        _updateDeliveryAddress();
       });
     }
+  }
+
+  @override
+  void dispose() {
+    _blockController.dispose();
+    _roomController.dispose();
+    super.dispose();
   }
 
   @override
@@ -134,6 +160,88 @@ class _CheckoutPageState extends State<CheckoutPage> {
                               );
                             },
                           ),
+
+                          // Delivery address fields (teachers only)
+                          if (context.read<AuthProvider>().userRole ==
+                              UserRole.teacher) ...[
+                            const SizedBox(height: 16),
+                            Text('Block',
+                                style: AppTextStyles.label.copyWith(
+                                  color: AppColors.textSecondary,
+                                )),
+                            const SizedBox(height: 8),
+                            TextField(
+                              controller: _blockController,
+                              style: AppTextStyles.bodyMedium,
+                              decoration: InputDecoration(
+                                hintText: 'e.g. Block A',
+                                hintStyle: AppTextStyles.bodyMedium.copyWith(
+                                    color: AppColors.textSecondary),
+                                filled: true,
+                                fillColor: AppColors.surface,
+                                prefixIcon: const Icon(
+                                    Icons.apartment_outlined,
+                                    color: AppColors.textSecondary),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                      color: AppColors.borderColor),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                      color: AppColors.borderColor),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                      color: AppColors.primary, width: 2),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 14),
+                              ),
+                              onChanged: (_) => _updateDeliveryAddress(),
+                            ),
+                            const SizedBox(height: 12),
+                            Text('Room Number',
+                                style: AppTextStyles.label.copyWith(
+                                  color: AppColors.textSecondary,
+                                )),
+                            const SizedBox(height: 8),
+                            TextField(
+                              controller: _roomController,
+                              style: AppTextStyles.bodyMedium,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                hintText: 'e.g. 203',
+                                hintStyle: AppTextStyles.bodyMedium.copyWith(
+                                    color: AppColors.textSecondary),
+                                filled: true,
+                                fillColor: AppColors.surface,
+                                prefixIcon: const Icon(
+                                    Icons.meeting_room_outlined,
+                                    color: AppColors.textSecondary),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                      color: AppColors.borderColor),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                      color: AppColors.borderColor),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                      color: AppColors.primary, width: 2),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 14),
+                              ),
+                              onChanged: (_) => _updateDeliveryAddress(),
+                            ),
+                          ],
                         ],
 
                         const SizedBox(height: 24),

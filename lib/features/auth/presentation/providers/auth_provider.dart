@@ -10,6 +10,8 @@ class AuthProvider with ChangeNotifier {
   firebase_auth.User? _firebaseUser;
   UserRole? _userRole;
   String? _userName;
+  String? _classroomNumber;
+  String? _blockName;
   bool _isLoading = false;
   String? _errorMessage;
 
@@ -17,6 +19,8 @@ class AuthProvider with ChangeNotifier {
   firebase_auth.User? get firebaseUser => _firebaseUser;
   UserRole? get userRole => _userRole;
   String? get userName => _userName;
+  String? get classroomNumber => _classroomNumber;
+  String? get blockName => _blockName;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get isAuthenticated => _firebaseUser != null;
@@ -122,6 +126,8 @@ class AuthProvider with ChangeNotifier {
       _firebaseUser = userCredential.user;
       _userRole = role;
       _userName = name;
+      _classroomNumber = classroomNumber;
+      _blockName = blockName;
       NotificationService.instance.setCurrentUserId(userCredential.user!.uid);
 
       _isLoading = false;
@@ -163,6 +169,8 @@ class AuthProvider with ChangeNotifier {
       _firebaseUser = null;
       _userRole = null;
       _userName = null;
+      _classroomNumber = null;
+      _blockName = null;
 
       _isLoading = false;
       notifyListeners();
@@ -217,6 +225,8 @@ class AuthProvider with ChangeNotifier {
       final roleString = doc.data()!['role'] as String;
       _userRole = UserRoleExtension.fromString(roleString);
       _userName = doc.data()!['name'] as String?;
+      _classroomNumber = doc.data()!['classroom_number'] as String?;
+      _blockName = doc.data()!['block_name'] as String?;
       notifyListeners();
     } catch (e) {
       _errorMessage = 'Failed to load user profile';

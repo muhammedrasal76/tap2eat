@@ -42,6 +42,7 @@ class OrderProvider with ChangeNotifier {
   FulfillmentType _fulfillmentType = FulfillmentType.pickup;
   BreakSlotEntity? _selectedBreakSlot;
   DateTime? _fulfillmentSlot;
+  String _deliveryAddress = '';
   bool _isPlacingOrder = false;
   String? _lastCreatedOrderId;
   String? _checkoutError;
@@ -79,6 +80,7 @@ class OrderProvider with ChangeNotifier {
   FulfillmentType get fulfillmentType => _fulfillmentType;
   BreakSlotEntity? get selectedBreakSlot => _selectedBreakSlot;
   DateTime? get fulfillmentSlot => _fulfillmentSlot;
+  String get deliveryAddress => _deliveryAddress;
   bool get isPlacingOrder => _isPlacingOrder;
   String? get lastCreatedOrderId => _lastCreatedOrderId;
   String? get checkoutError => _checkoutError;
@@ -138,6 +140,12 @@ class OrderProvider with ChangeNotifier {
       slot.startTime.hour,
       slot.startTime.minute,
     );
+    notifyListeners();
+  }
+
+  /// Set the delivery address
+  void setDeliveryAddress(String address) {
+    _deliveryAddress = address;
     notifyListeners();
   }
 
@@ -204,6 +212,9 @@ class OrderProvider with ChangeNotifier {
       if (_fulfillmentSlot == null) {
         return 'Invalid delivery time slot';
       }
+      if (_deliveryAddress.trim().isEmpty) {
+        return 'Please enter your delivery address';
+      }
     }
 
     return null;
@@ -246,6 +257,9 @@ class OrderProvider with ChangeNotifier {
         fulfillmentSlot: slot,
         fulfillmentType: _fulfillmentType.value,
         deliveryFee: deliveryFee,
+        deliveryAddress: _deliveryAddress.trim().isEmpty
+            ? null
+            : _deliveryAddress.trim(),
       ));
 
       _lastCreatedOrderId = orderId;
@@ -258,6 +272,7 @@ class OrderProvider with ChangeNotifier {
       _fulfillmentType = FulfillmentType.pickup;
       _selectedBreakSlot = null;
       _fulfillmentSlot = null;
+      _deliveryAddress = '';
       _isNowSlotSelected = false;
 
       notifyListeners();

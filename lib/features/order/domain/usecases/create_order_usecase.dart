@@ -20,6 +20,7 @@ class CreateOrderUseCase implements UseCase<String, CreateOrderParams> {
       fulfillmentSlot: params.fulfillmentSlot,
       fulfillmentType: params.fulfillmentType,
       deliveryFee: params.deliveryFee,
+      deliveryAddress: params.deliveryAddress,
     );
   }
 }
@@ -33,6 +34,7 @@ class CreateOrderParams extends Equatable {
   final DateTime fulfillmentSlot;
   final String fulfillmentType;
   final double deliveryFee;
+  final String? deliveryAddress;
 
   const CreateOrderParams({
     required this.canteenId,
@@ -43,6 +45,7 @@ class CreateOrderParams extends Equatable {
     required this.fulfillmentSlot,
     required this.fulfillmentType,
     required this.deliveryFee,
+    this.deliveryAddress,
   });
 
   @override
@@ -55,5 +58,6 @@ class CreateOrderParams extends Equatable {
         fulfillmentSlot,
         fulfillmentType,
         deliveryFee,
+        deliveryAddress,
       ];
 }
