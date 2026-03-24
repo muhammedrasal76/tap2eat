@@ -84,27 +84,34 @@ class _DeliveryHomePageState extends State<DeliveryHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.base,
-      appBar: AppBar(
-        backgroundColor: AppColors.base,
-        title: Text('Delivery', style: AppTextStyles.h3),
-        actions: const [
-          DeliveryStatusToggle(),
-          SizedBox(width: 16),
-        ],
-      ),
-      body: Consumer<DeliveryProvider>(
-        builder: (context, provider, _) {
-          return RefreshIndicator(
-            onRefresh: () async {
-              final userId =
-                  context.read<AuthProvider>().firebaseUser?.uid ?? '';
-              if (userId.isNotEmpty) {
-                await provider.fetchDeliveryHistory(userId);
-              }
-            },
-            child: ListView(
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: const BoxDecoration(
+            color: AppColors.base,
+            border: Border(bottom: BorderSide(color: AppColors.borderColor)),
+          ),
+          child: Row(
+            children: [
+              Expanded(child: Text('Delivery', style: AppTextStyles.h3)),
+              const DeliveryStatusToggle(),
+              const SizedBox(width: 8),
+            ],
+          ),
+        ),
+        Expanded(
+          child: Consumer<DeliveryProvider>(
+            builder: (context, provider, _) {
+              return RefreshIndicator(
+                onRefresh: () async {
+                  final userId =
+                      context.read<AuthProvider>().firebaseUser?.uid ?? '';
+                  if (userId.isNotEmpty) {
+                    await provider.fetchDeliveryHistory(userId);
+                  }
+                },
+                child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
                 // Offline banner
@@ -225,10 +232,12 @@ class _DeliveryHomePageState extends State<DeliveryHomePage> {
                     ),
                   ),
               ],
-            ),
-          );
-        },
-      ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

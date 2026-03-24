@@ -14,6 +14,13 @@ import '../../domain/usecases/get_settings_usecase.dart';
 import '../../domain/usecases/search_canteens_usecase.dart';
 import '../../domain/usecases/watch_recent_orders_usecase.dart';
 
+/// Pairs a menu item with its parent canteen for search results
+class FoodSearchResult {
+  final MenuItemEntity item;
+  final CanteenEntity canteen;
+  const FoodSearchResult({required this.item, required this.canteen});
+}
+
 /// Home screen state management provider
 class HomeProvider with ChangeNotifier {
   final GetCanteensUseCase getCanteensUseCase;
@@ -34,7 +41,9 @@ class HomeProvider with ChangeNotifier {
   });
 
   // State
+  List<CanteenEntity> _allCanteens = [];
   List<CanteenEntity> _canteens = [];
+  List<FoodSearchResult> _foodSearchResults = [];
   List<RecentOrderEntity> _recentOrders = [];
   SettingsEntity? _settings;
   String _searchQuery = '';
@@ -47,6 +56,7 @@ class HomeProvider with ChangeNotifier {
 
   // Getters
   List<CanteenEntity> get canteens => _canteens;
+  List<FoodSearchResult> get foodSearchResults => _foodSearchResults;
   List<RecentOrderEntity> get recentOrders => _recentOrders;
   SettingsEntity? get settings => _settings;
   String get searchQuery => _searchQuery;
@@ -76,6 +86,7 @@ class HomeProvider with ChangeNotifier {
         // Use dummy data for testing UI
         await Future.delayed(const Duration(milliseconds: 500)); // Simulate network delay
         _canteens = _getDummyCanteens();
+        _allCanteens = List.from(_canteens);
         _recentOrders = _getDummyRecentOrders();
         _settings = _getDummySettings();
       } else {
@@ -101,6 +112,7 @@ class HomeProvider with ChangeNotifier {
   Future<void> _fetchCanteens() async {
     try {
       _canteens = await getCanteensUseCase(NoParams());
+      _allCanteens = List.from(_canteens);
     } catch (e) {
       throw Exception('Failed to fetch canteens: $e');
     }
@@ -131,17 +143,13 @@ class HomeProvider with ChangeNotifier {
     }
   }
 
-  /// Search canteens by query
-  Future<void> searchCanteens(String query) async {
+  /// Search canteens by query (local filtering against cached list)
+  void searchCanteens(String query) {
     _searchQuery = query;
 
     if (query.isEmpty) {
-      // Reset to all canteens
-      if (_useDummyData) {
-        _canteens = _getDummyCanteens();
-      } else {
-        await _fetchCanteens();
-      }
+      _canteens = List.from(_allCanteens);
+      _foodSearchResults = [];
       notifyListeners();
       return;
     }
@@ -149,33 +157,20 @@ class HomeProvider with ChangeNotifier {
     _isSearching = true;
     notifyListeners();
 
-    try {
-      if (_useDummyData) {
-        // Filter dummy data locally
-        final allCanteens = _getDummyCanteens();
-        _canteens = allCanteens.where((canteen) {
-          final lowercaseQuery = query.toLowerCase();
-          if (canteen.name.toLowerCase().contains(lowercaseQuery)) {
-            return true;
-          }
-          return canteen.menuItems.any((item) =>
-              item.name.toLowerCase().contains(lowercaseQuery) ||
-              item.category.toLowerCase().contains(lowercaseQuery));
-        }).toList();
-      } else {
-        // Real search via use case
-        _canteens = await searchCanteensUseCase(
-          SearchCanteensParams(query: query),
-        );
+    final lowercaseQuery = query.toLowerCase();
+    final results = <FoodSearchResult>[];
+    for (final canteen in _allCanteens) {
+      for (final item in canteen.menuItems) {
+        if (item.name.toLowerCase().contains(lowercaseQuery) ||
+            item.category.toLowerCase().contains(lowercaseQuery)) {
+          results.add(FoodSearchResult(item: item, canteen: canteen));
+        }
       }
-
-      _isSearching = false;
-      notifyListeners();
-    } catch (e) {
-      _isSearching = false;
-      _errorMessage = 'Search failed';
-      notifyListeners();
     }
+    _foodSearchResults = results;
+
+    _isSearching = false;
+    notifyListeners();
   }
 
   /// Refresh all data

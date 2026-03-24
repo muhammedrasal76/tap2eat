@@ -98,9 +98,13 @@ class _HomePageState extends State<HomePage> {
                         child: CustomScrollView(
                           slivers: [
                             _buildHeader(authProvider),
-                            if (homeProvider.recentOrders.isNotEmpty)
+                            if (homeProvider.recentOrders.isNotEmpty &&
+                                homeProvider.searchQuery.isEmpty)
                               _buildRecentOrdersSection(homeProvider),
-                            _buildCanteensSection(homeProvider),
+                            if (homeProvider.searchQuery.isEmpty)
+                              _buildCanteensSection(homeProvider)
+                            else
+                              _buildFoodSearchResults(homeProvider),
                             const SliverToBoxAdapter(
                                 child: SizedBox(height: 100)),
                           ],
@@ -194,35 +198,98 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildCanteensSection(HomeProvider homeProvider) {
+    if (homeProvider.canteens.isEmpty) {
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
     return SliverPadding(
       padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
       sliver: SliverList(
-        delegate: SliverChildBuilderDelegate((context, index) {
-          if (index == 0) {
-            // Section header
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            if (index == 0) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text('Canteens', style: AppTextStyles.h4),
+              );
+            }
+            final canteenIndex = index - 1;
+            if (canteenIndex >= homeProvider.canteens.length) return null;
+            final canteen = homeProvider.canteens[canteenIndex];
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: CanteenCard(
+                canteen: canteen,
+                onTap: () => context.pushNamed('menu', extra: canteen),
+              ),
+            );
+          },
+          childCount: homeProvider.canteens.length + 1,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFoodSearchResults(HomeProvider homeProvider) {
+    return SliverPadding(
+      padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            if (index == 0) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text(
+                  'Results for "${homeProvider.searchQuery}"',
+                  style: AppTextStyles.h4,
+                ),
+              );
+            }
+
+            if (homeProvider.isSearching) {
+              if (index == 1) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 40),
+                  child: Center(
+                    child: CircularProgressIndicator(color: AppColors.primary),
+                  ),
+                );
+              }
+              return null;
+            }
+
+            if (homeProvider.foodSearchResults.isEmpty) {
+              if (index == 1) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 40),
+                  child: Center(
+                    child: Text(
+                      'No food items match your search',
+                      style: AppTextStyles.bodyMedium
+                          .copyWith(color: AppColors.textSecondary),
+                    ),
+                  ),
+                );
+              }
+              return null;
+            }
+
+            final resultIndex = index - 1;
+            if (resultIndex >= homeProvider.foodSearchResults.length) return null;
+
+            final result = homeProvider.foodSearchResults[resultIndex];
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: Text('Canteens', style: AppTextStyles.h4),
+              child: _FoodSearchResultTile(
+                result: result,
+                onTap: () => context.pushNamed('menu', extra: result.canteen),
+              ),
             );
-          }
-
-          final canteenIndex = index - 1;
-          if (canteenIndex >= homeProvider.canteens.length) {
-            return null;
-          }
-
-          final canteen = homeProvider.canteens[canteenIndex];
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: CanteenCard(
-              canteen: canteen,
-              onTap: () {
-                // Navigate to menu screen with canteen data
-                context.pushNamed('menu', extra: canteen);
-              },
-            ),
-          );
-        }, childCount: homeProvider.canteens.length + 1),
+          },
+          childCount:
+              homeProvider.isSearching || homeProvider.foodSearchResults.isEmpty
+                  ? 2
+                  : homeProvider.foodSearchResults.length + 1,
+        ),
       ),
     );
   }
@@ -564,6 +631,64 @@ class _HomePageState extends State<HomePage> {
             }
           }
         },
+      ),
+    );
+  }
+}
+
+class _FoodSearchResultTile extends StatelessWidget {
+  final FoodSearchResult result;
+  final VoidCallback onTap;
+
+  const _FoodSearchResultTile({required this.result, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.borderColor),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(result.item.name, style: AppTextStyles.bodyLarge),
+                  const SizedBox(height: 4),
+                  Text(
+                    result.canteen.name,
+                    style: AppTextStyles.bodySmall
+                        .copyWith(color: AppColors.textSecondary),
+                  ),
+                  const SizedBox(height: 6),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      result.item.category,
+                      style: AppTextStyles.bodySmall
+                          .copyWith(color: AppColors.primary),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Text(
+              '\u20B9${result.item.price.toStringAsFixed(0)}',
+              style: AppTextStyles.bodyLarge.copyWith(color: AppColors.primary),
+            ),
+          ],
+        ),
       ),
     );
   }
