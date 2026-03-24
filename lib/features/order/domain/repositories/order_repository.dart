@@ -32,4 +32,7 @@ abstract class OrderRepository {
 
   /// Fetch name and phone of a delivery person from users collection
   Future<Map<String, String>?> getDeliveryPersonInfo(String userId);
+
+  /// Cancel a pending order by setting its status to cancelled
+  Future<void> cancelOrder(String orderId);
 }

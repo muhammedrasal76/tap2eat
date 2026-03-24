@@ -11,6 +11,7 @@ abstract class OrderRemoteDataSource {
   Stream<List<RecentOrderModel>> watchOrderHistory(String userId);
   Stream<RecentOrderModel?> watchOrderDetail(String orderId);
   Future<Map<String, String>?> getDeliveryPersonInfo(String userId);
+  Future<void> cancelOrder(String orderId);
 }
 
 class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
@@ -141,6 +142,21 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
           data['id'] = doc.id;
           return RecentOrderModel.fromJson(data);
         });
+  }
+
+  @override
+  Future<void> cancelOrder(String orderId) async {
+    try {
+      await firestore
+          .collection(FirebaseConstants.ordersCollection)
+          .doc(orderId)
+          .update({
+        FirebaseConstants.orderStatus: 'cancelled',
+        FirebaseConstants.orderUpdatedAt: FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      throw Exception('Failed to cancel order: $e');
+    }
   }
 
   @override

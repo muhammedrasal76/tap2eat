@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../../config/constants/enum_values.dart';
 import '../../../../config/theme/colors.dart';
 import '../../../../config/theme/text_styles.dart';
+import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/loading_spinner.dart';
 import '../providers/order_provider.dart';
 import '../widgets/order_status_badge.dart';
@@ -175,6 +176,22 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                           deliveryFee: detail.deliveryFee,
                           total: detail.totalAmount,
                         ),
+
+                        // Cancel button — only for pending orders
+                        if (detail.status == OrderStatus.pending) ...[
+                          const SizedBox(height: 24),
+                          AppButton(
+                            text: 'Cancel Order',
+                            isLoading: order.isCancellingOrder,
+                            backgroundColor: AppColors.error,
+                            width: double.infinity,
+                            onPressed: order.isCancellingOrder
+                                ? null
+                                : () => _confirmCancel(context, detail.id),
+                          ),
+                        ],
+
+                        const SizedBox(height: 16),
                       ],
                     ),
                   );
@@ -185,6 +202,54 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _confirmCancel(BuildContext context, String orderId) async {
+    final orderProvider = context.read<OrderProvider>();
+    final messenger = ScaffoldMessenger.of(context);
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: Text('Cancel Order?', style: AppTextStyles.h4),
+        content: Text(
+          'This action cannot be undone. Are you sure you want to cancel this order?',
+          style: AppTextStyles.bodyMedium,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(
+              'Keep Order',
+              style: AppTextStyles.bodyMedium
+                  .copyWith(color: AppColors.textSecondary),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(
+              'Cancel Order',
+              style: AppTextStyles.bodyMedium
+                  .copyWith(color: AppColors.error),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+    final success = await orderProvider.cancelOrder(orderId);
+    if (!success && mounted) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            orderProvider.cancelError ?? 'Failed to cancel order',
+          ),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
   }
 
   Widget _buildHeader(BuildContext context) {

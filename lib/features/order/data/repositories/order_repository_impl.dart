@@ -98,4 +98,13 @@ class OrderRepositoryImpl implements OrderRepository {
   @override
   Future<Map<String, String>?> getDeliveryPersonInfo(String userId) =>
       remoteDataSource.getDeliveryPersonInfo(userId);
+
+  @override
+  Future<void> cancelOrder(String orderId) async {
+    try {
+      await remoteDataSource.cancelOrder(orderId);
+    } catch (e) {
+      throw Exception('Repository: Failed to cancel order - $e');
+    }
+  }
 }

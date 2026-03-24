@@ -9,6 +9,7 @@ import '../../../home/domain/entities/settings_entity.dart';
 import '../../../menu/presentation/providers/cart_provider.dart';
 import '../../../delivery/domain/usecases/check_delivery_availability_usecase.dart';
 import '../../domain/repositories/order_repository.dart';
+import '../../domain/usecases/cancel_order_usecase.dart';
 import '../../domain/usecases/create_order_usecase.dart';
 import '../../domain/usecases/get_active_order_count_usecase.dart';
 import '../../domain/usecases/get_order_detail_usecase.dart';
@@ -18,6 +19,7 @@ import '../../domain/usecases/watch_order_detail_usecase.dart';
 
 /// Order state management provider
 class OrderProvider with ChangeNotifier {
+  final CancelOrderUseCase cancelOrderUseCase;
   final CreateOrderUseCase createOrderUseCase;
   final GetOrderHistoryUseCase getOrderHistoryUseCase;
   final GetOrderDetailUseCase getOrderDetailUseCase;
@@ -28,6 +30,7 @@ class OrderProvider with ChangeNotifier {
   final OrderRepository repository;
 
   OrderProvider({
+    required this.cancelOrderUseCase,
     required this.createOrderUseCase,
     required this.getOrderHistoryUseCase,
     required this.getOrderDetailUseCase,
@@ -37,6 +40,10 @@ class OrderProvider with ChangeNotifier {
     required this.watchOrderDetailUseCase,
     required this.repository,
   });
+
+  // Cancel state
+  bool _isCancellingOrder = false;
+  String? _cancelError;
 
   // Checkout state
   FulfillmentType _fulfillmentType = FulfillmentType.pickup;
@@ -75,6 +82,10 @@ class OrderProvider with ChangeNotifier {
   StreamSubscription<List<RecentOrderEntity>>? _orderHistorySubscription;
   StreamSubscription<RecentOrderEntity?>? _orderDetailSubscription;
   String? _historyUserId;
+
+  // Cancel getters
+  bool get isCancellingOrder => _isCancellingOrder;
+  String? get cancelError => _cancelError;
 
   // Checkout getters
   FulfillmentType get fulfillmentType => _fulfillmentType;
@@ -141,6 +152,27 @@ class OrderProvider with ChangeNotifier {
       slot.startTime.minute,
     );
     notifyListeners();
+  }
+
+  /// Cancel a pending order. Guards against non-pending status race condition.
+  Future<bool> cancelOrder(String orderId) async {
+    if (_orderDetail?.status != OrderStatus.pending) return false;
+
+    _isCancellingOrder = true;
+    _cancelError = null;
+    notifyListeners();
+
+    try {
+      await cancelOrderUseCase(CancelOrderParams(orderId: orderId));
+      _isCancellingOrder = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isCancellingOrder = false;
+      _cancelError = 'Failed to cancel order. Please try again.';
+      notifyListeners();
+      return false;
+    }
   }
 
   /// Set the delivery address

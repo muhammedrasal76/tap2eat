@@ -28,6 +28,7 @@ import 'features/home/presentation/providers/home_provider.dart';
 import 'features/menu/presentation/providers/cart_provider.dart';
 import 'features/order/data/datasources/order_remote_datasource.dart';
 import 'features/order/data/repositories/order_repository_impl.dart';
+import 'features/order/domain/usecases/cancel_order_usecase.dart';
 import 'features/order/domain/usecases/create_order_usecase.dart';
 import 'features/order/domain/usecases/get_active_order_count_usecase.dart';
 import 'features/order/domain/usecases/get_order_detail_usecase.dart';
@@ -121,6 +122,7 @@ class MyApp extends StatelessWidget {
               remoteDataSource: deliveryDataSource,
             );
             return OrderProvider(
+              cancelOrderUseCase: CancelOrderUseCase(orderRepository),
               createOrderUseCase: CreateOrderUseCase(orderRepository),
               getOrderHistoryUseCase: GetOrderHistoryUseCase(orderRepository),
               getOrderDetailUseCase: GetOrderDetailUseCase(orderRepository),
